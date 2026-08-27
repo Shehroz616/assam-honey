@@ -572,13 +572,11 @@ body::after {
 .rail-cinema-scrim {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        to top,
-        rgba(6, 5, 4, 0.97) 0%,
-        rgba(6, 5, 4, 0.7) 35%,
-        rgba(6, 5, 4, 0.08) 65%,
-        rgba(6, 5, 4, 0.0) 100%
-    );
+    background: linear-gradient(to top,
+            rgba(6, 5, 4, 0.97) 0%,
+            rgba(6, 5, 4, 0.7) 35%,
+            rgba(6, 5, 4, 0.08) 65%,
+            rgba(6, 5, 4, 0.0) 100%);
     z-index: 1;
 }
 
@@ -1052,12 +1050,10 @@ body::after {
     left: 0;
     right: 0;
     height: 70%;
-    background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        rgba(12, 11, 9, 0.65) 55%,
-        #0C0B09 100%
-    );
+    background: linear-gradient(to bottom,
+            transparent 0%,
+            rgba(12, 11, 9, 0.65) 55%,
+            #0C0B09 100%);
     z-index: 1;
     pointer-events: none;
 }
@@ -1337,4 +1333,4 @@ body::after {
     .fixed-nav {
         padding: 1.5rem 1.8rem;
     }
-}
+}
