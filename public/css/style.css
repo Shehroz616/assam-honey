@@ -949,7 +949,7 @@ body::after {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2.5rem;
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
     min-height: 850px;
 }
