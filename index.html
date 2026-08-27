@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASSAM HONEY — Raw from the Assam Hills</title>
+  <meta name="description" content="ASSAM HONEY produces dark, cinematic, raw single-origin honey from the pristine Assam hills. Explore Litchi, Mustard, and Wild Forest harvests.">
+  
+  <!-- Typography: Cormorant Garamond & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Lenis CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/lenis@1.1.9/dist/lenis.css">
+
+  <style>
+    /* ==========================================================================
+       CORE DESIGN SYSTEM & RESET
+       ========================================================================== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #0A0908;
+      color: #F5F5F0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow-x: clip; /* CRITICAL: overflow-x: clip preserves position: sticky */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Off-white for ALL text elements */
+    h1, h2, h3, h4, h5, h6, p, span, a, label, button, input, div {
+      color: #F5F5F0;
+    }
+
+    /* Headings Typography */
+    h1, h2, h3, .font-serif {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 300;
+    }
+
+    /* Gold accent color is NEVER used as text color. Only for buttons, borders, lines, progress fill */
+    .accent-gold-bg { background-color: #D4AF37; }
+    .accent-gold-border { border-color: #D4AF37; }
+
+    /* Button Styling */
+    .btn-gold {
+      background-color: #D4AF37;
+      color: #0A0908 !important; /* Dark text inside gold button */
+      border: 1px solid #D4AF37;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      padding: 0.85rem 2rem;
+      cursor: pointer;
+      transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+      text-transform: uppercase;
+      border-radius: 0px;
+      display: inline-block;
+      text-decoration: none;
+    }
+
+    .btn-gold:hover {
+      background-color: #F5F5F0;
+      border-color: #F5F5F0;
+      color: #0A0908 !important;
+      box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+    }
+
+    /* ==========================================================================
+       LOADING SCREEN
+       ========================================================================== */
+    .loader-screen {
+      position: fixed;
+      inset: 0;
+      background: #0A0908;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.6s ease;
+    }
+
+    .loader-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .loader-content {
+      text-align: center;
+      max-width: 340px;
+      width: 85%;
+    }
+
+    .loader-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      letter-spacing: 8px;
+      color: #F5F5F0;
+      margin-bottom: 2rem;
+      font-weight: 300;
+    }
+
+    .loader-bar-bg {
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      margin-bottom: 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .loader-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #D4AF37;
+      transition: width 0.15s ease-out;
+    }
+
+    .loader-status {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #A0A09C;
+      text-transform: uppercase;
+    }
+
+    /* ==========================================================================
+       NAVIGATION & PROGRESS BAR
+       ========================================================================== */
+    .fixed-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      padding: 2.2rem 3.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      pointer-events: none;
+      box-sizing: border-box;
+    }
+
+    .nav-brand, .nav-shop {
+      pointer-events: auto;
+      color: #F5F5F0;
+      text-decoration: none;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      font-weight: 400;
+      transition: opacity 0.3s ease;
+    }
+
+    .nav-brand:hover, .nav-shop:hover {
+      opacity: 0.65;
+    }
+
+    /* Fixed Scroll Progress Bar on Right Edge */
+    .progress-container {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 2px;
+      height: 100vh;
+      background: rgba(212, 175, 55, 0.18);
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .progress-fill {
+      width: 100%;
+      height: 0%;
+      background: #D4AF37;
+      transform-origin: top;
+      transition: height 0.05s linear;
+    }
+
+    /* ==========================================================================
+       SECTION 1: HERO CANVAS & OVERLAYS
+       ========================================================================== */
+    .hero-track {
+      position: relative;
+      height: 550vh; /* Track for 881 hero frames */
+      background: #0A0908;
+    }
+
+    .hero-pin {
+      position: sticky;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #0A0908;
+    }
+
+    /* Static poster behind canvas before frames decode */
+    .hero-poster {
+      position: absolute;
+      inset: 0;
+      background-image: url('./public/images/hero/image-1-honeycomb-hero.jfif');
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.65);
+      z-index: 1;
+    }
+
+    #hero-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+      z-index: 2;
+    }
+
+    /* Text Overlays */
+    .hero-overlay {
+      position: absolute;
+      z-index: 3;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .hero-title {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.5rem, 8vw, 96px);
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      color: #F5F5F0;
+      text-align: center;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .hero-sub {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.5rem, 3vw, 28px);
+      font-style: italic;
+      font-weight: 300;
+      color: #F5F5F0;
+      text-align: center;
+    }
+
+    .hero-varieties {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 5vw, 60px);
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: #F5F5F0;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .hero-tagline {
+      top: 10%;
+      left: 8%;
+      width: auto;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 4px;
+      color: #F5F5F0;
+      text-transform: uppercase;
+    }
+
+    /* ==========================================================================
+       SECTION 2: STICKY PRODUCT EXPLAINER
+       ========================================================================== */
+    .explainer-section {
+      position: relative;
+      height: 300vh;
+      background: #0C0B0A;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .explainer-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .explainer-left {
+      width: 50%;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, rgba(32, 27, 21, 0.9), rgba(10, 9, 8, 1));
+      border-right: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .explainer-img-frame {
+      position: relative;
+      width: 75%;
+      max-width: 420px;
+      aspect-ratio: 3/4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .explainer-glow {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(25px);
+    }
+
+    .explainer-jar-img {
+      max-width: 100%;
+      max-height: 80%;
+      object-fit: contain;
+      filter: drop-shadow(0 25px 45px rgba(0, 0, 0, 0.85));
+      transition: opacity 0.45s ease, transform 0.45s ease;
+    }
+
+    .explainer-badge {
+      margin-top: 1.8rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      letter-spacing: 3px;
+      color: #F5F5F0;
+      border-bottom: 1px solid #D4AF37;
+      padding-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .explainer-right {
+      width: 50%;
+    }
+
+    .explainer-panel {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 5rem;
+      box-sizing: border-box;
+    }
+
+    .panel-num {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: #A0A09C;
+      margin-bottom: 1.2rem;
+      display: block;
+    }
+
+    .panel-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 5.5vw, 68px);
+      font-weight: 300;
+      color: #F5F5F0;
+      margin: 0 0 1.2rem 0;
+      letter-spacing: 0.06em;
+    }
+
+    .panel-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.4rem, 2.2vw, 26px);
+      font-style: italic;
+      color: #F5F5F0;
+      margin-bottom: 1.8rem;
+      line-height: 1.4;
+    }
+
+    .panel-desc {
+      font-size: 15px;
+      line-height: 1.85;
+      color: #D5D5D0;
+      max-width: 460px;
+    }
+
+    /* ==========================================================================
+       SECTION 3: HORIZONTAL COLLECTION RAIL
+       ========================================================================== */
+    .collection-rail-track {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+      background: #0A0908;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .rail-pin-container {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .rail-flex {
+      display: flex;
+      width: 400vw;
+      height: 100vh;
+      will-change: transform;
+    }
+
+    .rail-panel {
+      width: 100vw;
+      height: 100vh;
+      flex-shrink: 0;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+
+    .panel-intro {
+      position: relative;
+    }
+
+    .rail-bg-img {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.55);
+    }
+
+    .rail-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(10,9,8,0.3) 0%, rgba(10,9,8,0.85) 100%);
+    }
+
+    .rail-intro-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 650px;
+      padding: 2.5rem;
+    }
+
+    .rail-eyebrow {
+      font-size: 11px;
+      letter-spacing: 5px;
+      color: #A0A09C;
+      margin-bottom: 1.2rem;
+      display: block;
+    }
+
+    .rail-hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.2rem, 7.5vw, 88px);
+      font-weight: 300;
+      color: #F5F5F0;
+      letter-spacing: 0.12em;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .rail-hero-desc {
+      font-size: 16px;
+      line-height: 1.85;
+      color: #E0E0DB;
+    }
+
+    .panel-product {
+      background: #0E0D0B;
+      padding: 4rem;
+    }
+
+    .rail-card {
+      display: flex;
+      align-items: center;
+      gap: 4.5rem;
+      max-width: 920px;
+      width: 90%;
+      background: rgba(22, 19, 16, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      padding: 3.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .rail-card-img-wrap {
+      width: 280px;
+      height: 360px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .rail-card-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 35px rgba(0,0,0,0.85));
+    }
+
+    .rail-card-info {
+      flex: 1;
+    }
+
+    .rail-card-tag {
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #F5F5F0;
+      border-left: 2px solid #D4AF37;
+      padding-left: 8px;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .rail-card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2rem, 3.5vw, 44px);
+      font-weight: 300;
+      color: #F5F5F0;
+      margin: 0 0 1.2rem 0;
+      letter-spacing: 0.05em;
+    }
+
+    .rail-card-text {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #D5D5D0;
+      margin-bottom: 2rem;
+    }
+
+    /* ==========================================================================
+       SECTION 4: STACKING RITUAL CARDS
+       ========================================================================== */
+    .ritual-section {
+      position: relative;
+      padding: 9rem 2rem 12rem 2rem;
+      background: #0A0908;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .section-header-center {
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+
+    .section-eyebrow {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: #A0A09C;
+      display: block;
+      margin-bottom: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.4rem, 4.5vw, 58px);
+      font-weight: 300;
+      color: #F5F5F0;
+      letter-spacing: 0.08em;
+      margin: 0;
+    }
+
+    .ritual-cards-container {
+      position: relative;
+      max-width: 1020px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5rem;
+    }
+
+    .ritual-card {
+      position: sticky;
+      height: 68vh;
+      min-height: 460px;
+      overflow: hidden;
+      border: 1px solid rgba(212, 175, 55, 0.35);
+      background: #12100E;
+      box-shadow: 0 -15px 45px rgba(0, 0, 0, 0.85);
+      display: flex;
+      align-items: flex-end;
+      padding: 4.5rem;
+      box-sizing: border-box;
+    }
+
+    .card-1 { top: 12vh; }
+    .card-2 { top: 16vh; }
+    .card-3 { top: 20vh; }
+
+    .ritual-video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.52) contrast(1.08);
+    }
+
+    .ritual-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(0deg, rgba(10,9,8,0.95) 0%, rgba(10,9,8,0.2) 65%);
+    }
+
+    .ritual-card-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .ritual-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      color: #F5F5F0;
+      margin-bottom: 0.6rem;
+      border-bottom: 1px solid #D4AF37;
+      display: inline-block;
+      padding-bottom: 2px;
+    }
+
+    .ritual-word {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 5.5vw, 68px);
+      font-weight: 300;
+      color: #F5F5F0;
+      margin: 0 0 1rem 0;
+      letter-spacing: 0.12em;
+    }
+
+    .ritual-quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.3rem, 2.2vw, 26px);
+      font-style: italic;
+      color: #F5F5F0;
+      margin: 0;
+    }
+
+    /* ==========================================================================
+       SECTION 5: PARALLAX STATEMENT
+       ========================================================================== */
+    .statement-section {
+      position: relative;
+      height: 90vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .statement-bg {
+      position: absolute;
+      inset: -15% 0;
+      background-size: cover;
+      background-position: center;
+      will-change: transform;
+      filter: brightness(0.5);
+    }
+
+    .statement-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(10,9,8,0.45) 0%, rgba(10,9,8,0.92) 100%);
+    }
+
+    .statement-content {
+      position: relative;
+      z-index: 2;
+      padding: 2.5rem;
+      max-width: 850px;
+    }
+
+    .statement-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 6.5vw, 76px);
+      font-weight: 300;
+      color: #F5F5F0;
+      line-height: 1.25;
+      margin: 0 0 2.2rem 0;
+      letter-spacing: 0.04em;
+    }
+
+    .statement-title em {
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .statement-line {
+      width: 70px;
+      height: 1px;
+      background: #D4AF37;
+      margin: 0 auto 2.2rem auto;
+    }
+
+    .statement-tagline {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      letter-spacing: 4px;
+      color: #F5F5F0;
+      text-transform: uppercase;
+    }
+
+    /* ==========================================================================
+       MACRO ACCENTS & ARCHIVAL STORYBOARD
+       ========================================================================== */
+    .macro-accent-wrapper {
+      padding: 5rem 2rem;
+      display: flex;
+      background: #0A0908;
+    }
+
+    .accent-right { justify-content: flex-end; padding-right: 12vw; }
+    .accent-left { justify-content: flex-start; padding-left: 12vw; }
+    .accent-center { justify-content: center; }
+
+    .macro-accent-card {
+      max-width: 340px;
+      background: rgba(22, 19, 16, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      padding: 1rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .macro-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      filter: contrast(1.1) brightness(0.92);
+      margin-bottom: 0.8rem;
+    }
+
+    .macro-caption {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      color: #D5D5D0;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .storyboard-archive-section {
+      padding: 9rem 2rem;
+      background: #0A0908;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .storyboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.5rem;
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    .storyboard-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: rgba(20, 18, 15, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1rem;
+      transition: transform 0.35s ease, border-color 0.35s ease;
+    }
+
+    .storyboard-item:hover {
+      transform: translateY(-5px);
+      border-color: rgba(212, 175, 55, 0.5);
+    }
+
+    .storyboard-img {
+      width: 100%;
+      aspect-ratio: 16/10;
+      object-fit: cover;
+      filter: grayscale(0.15) contrast(1.08);
+      margin-bottom: 0.8rem;
+    }
+
+    .storyboard-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #E0E0DB;
+      text-align: center;
+    }
+
+    /* ==========================================================================
+       SECTION 6: REVERSE COLUMNS
+       ========================================================================== */
+    .reverse-columns-section {
+      position: relative;
+      padding: 11rem 2rem;
+      background: #080706;
+      overflow: hidden;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .reverse-overlay-title {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      text-align: center;
+      pointer-events: none;
+      width: 100%;
+    }
+
+    .reverse-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 6.5vw, 80px);
+      font-style: italic;
+      color: #F5F5F0;
+      text-shadow: 0 12px 40px rgba(0, 0, 0, 0.95);
+      margin: 0;
+      font-weight: 300;
+    }
+
+    .reverse-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      min-height: 850px;
+    }
+
+    .reverse-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+      will-change: transform;
+    }
+
+    .reverse-card {
+      position: relative;
+      background: #14120F;
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      overflow: hidden;
+    }
+
+    .reverse-img {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.65) contrast(1.08);
+      transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .reverse-card:hover .reverse-img {
+      transform: scale(1.06);
+    }
+
+    .reverse-card-label {
+      position: absolute;
+      bottom: 1.2rem;
+      left: 1.5rem;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: #F5F5F0;
+      background: rgba(10, 9, 8, 0.75);
+      padding: 5px 12px;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    /* ==========================================================================
+       SECTION 7: PRODUCT COLLECTION GRID
+       ========================================================================== */
+    .grid-section {
+      padding: 9rem 2rem 11rem 2rem;
+      background: #0A0908;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 3.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .product-card {
+      background: rgba(22, 19, 16, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .product-card:hover {
+      transform: translateY(-8px);
+      border-color: #D4AF37;
+      box-shadow: 0 15px 40px rgba(212, 175, 55, 0.28);
+    }
+
+    .product-card-img-wrap {
+      width: 100%;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 2.2rem;
+    }
+
+    .product-card-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 18px 30px rgba(0,0,0,0.85));
+    }
+
+    .product-card-content {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .product-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      font-weight: 300;
+      color: #F5F5F0;
+      margin: 0 0 0.8rem 0;
+      letter-spacing: 0.06em;
+    }
+
+    .product-desc {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #D5D5D0;
+      margin-bottom: 2.2rem;
+      flex: 1;
+    }
+
+    .product-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 24px;
+      color: #F5F5F0;
+    }
+
+    /* ==========================================================================
+       SECTION 8: NEWSLETTER
+       ========================================================================== */
+    .newsletter-section {
+      position: relative;
+      padding: 11rem 2rem;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid rgba(212, 175, 55, 0.12);
+    }
+
+    .newsletter-bg {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.4);
+    }
+
+    .newsletter-overlay {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at center, rgba(10,9,8,0.65) 0%, rgba(10,9,8,0.96) 100%);
+    }
+
+    .newsletter-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      max-width: 620px;
+      width: 100%;
+    }
+
+    .newsletter-eyebrow {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: #A0A09C;
+      display: block;
+      margin-bottom: 1.2rem;
+    }
+
+    .newsletter-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.8rem, 5.5vw, 68px);
+      font-weight: 300;
+      color: #F5F5F0;
+      margin: 0 0 1.2rem 0;
+    }
+
+    .newsletter-sub {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #D5D5D0;
+      margin-bottom: 2.8rem;
+    }
+
+    .newsletter-form {
+      display: flex;
+      gap: 0.8rem;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .newsletter-input {
+      flex: 1;
+      padding: 0.95rem 1.4rem;
+      background: rgba(10, 9, 8, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      color: #F5F5F0;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    .newsletter-input:focus {
+      border-color: #D4AF37;
+    }
+
+    /* ==========================================================================
+       SECTION 9: FOOTER
+       ========================================================================== */
+    .site-footer {
+      padding: 6rem 2rem 4rem 2rem;
+      background: #060504;
+      border-top: 1px solid rgba(212, 175, 55, 0.15);
+      text-align: center;
+    }
+
+    .footer-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      letter-spacing: 6px;
+      color: #F5F5F0;
+      margin: 0 0 0.6rem 0;
+      font-weight: 300;
+    }
+
+    .footer-tagline {
+      font-size: 11px;
+      letter-spacing: 4px;
+      color: #A0A09C;
+      margin-bottom: 3rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2.5rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: #F5F5F0;
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: 3px;
+      transition: opacity 0.3s ease;
+    }
+
+    .footer-links a:hover {
+      opacity: 0.6;
+    }
+
+    .footer-divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(212, 175, 55, 0.3);
+      margin: 0 auto 2.5rem auto;
+    }
+
+    .footer-copy {
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #777773;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 900px) {
+      .explainer-container { flex-direction: column; }
+      .explainer-left { width: 100%; height: 50vh; }
+      .explainer-right { width: 100%; }
+      .explainer-panel { padding: 0 2rem; }
+      .rail-card { flex-direction: column; text-align: center; gap: 2rem; padding: 2rem; }
+      .rail-card-img-wrap { width: 100%; height: 240px; }
+      .reverse-grid { grid-template-columns: 1fr; }
+      .newsletter-form { flex-direction: column; }
+      .fixed-nav { padding: 1.5rem 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Screen -->
+  <div id="loader" class="loader-screen">
+    <div class="loader-content">
+      <div class="loader-brand">ASSAM HONEY</div>
+      <div class="loader-bar-bg">
+        <div id="loader-bar" class="loader-bar-fill"></div>
+      </div>
+      <div id="loader-status" class="loader-status">INITIALIZING HARVEST (0 / 40)</div>
+    </div>
+  </div>
+
+  <!-- Fixed Nav Header -->
+  <header class="fixed-nav">
+    <a href="#" class="nav-brand">ASSAM HONEY</a>
+    <a href="#grid-section" class="nav-shop">SHOP</a>
+  </header>
+
+  <!-- Fixed Scroll Progress Bar -->
+  <div class="progress-container">
+    <div id="progress-fill" class="progress-fill"></div>
+  </div>
+
+  <!-- Main Scroll Story Container -->
+  <main class="scroll-story">
+
+    <!-- 1. HERO SECTION -->
+    <section id="hero-track" class="hero-track">
+      <div id="hero-pin" class="hero-pin">
+        <div id="hero-poster" class="hero-poster"></div>
+        <canvas id="hero-canvas"></canvas>
+        
+        <!-- Hero Text Overlays -->
+        <div id="hero-text-1" class="hero-overlay hero-title">ASSAM HONEY</div>
+        <div id="hero-text-2" class="hero-overlay hero-sub">Raw from the Assam hills.</div>
+        <div id="hero-text-3" class="hero-overlay hero-varieties">LITCHI · MUSTARD · WILD FOREST</div>
+        <div id="hero-text-4" class="hero-overlay hero-tagline">ONE DROP. A THOUSAND BLOSSOMS.</div>
+      </div>
+    </section>
+
+    <!-- Macro Accent 1 -->
+    <div class="macro-accent-wrapper accent-right">
+      <div class="macro-accent-card">
+        <img src="./public/images/lifestyle/lifestyle-honeycomb-macro.jfif" alt="Raw Honeycomb Texture" class="macro-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+        <div class="macro-caption">NATURAL COMB STRUCTURE · UNFILTERED PURE NECTAR</div>
+      </div>
+    </div>
+
+    <!-- 2. STICKY PRODUCT EXPLAINER -->
+    <section id="explainer-section" class="explainer-section">
+      <div class="explainer-container">
+        <!-- Left 50% Sticky Image Container -->
+        <div class="explainer-left">
+          <div class="explainer-img-frame">
+            <div class="explainer-glow"></div>
+            <img id="sticky-product-img" src="./public/images/product/assam-honey-litchi.jfif" alt="Assam Honey Jar" class="explainer-jar-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+            <div id="sticky-product-badge" class="explainer-badge">01 / LITCHI HARVEST</div>
+          </div>
+        </div>
+
+        <!-- Right 50% Sticky Panels -->
+        <div class="explainer-right">
+          <div class="explainer-panel" data-jar="./public/images/product/assam-honey-litchi.jfif" data-badge="01 / LITCHI HARVEST">
+            <span class="panel-num">VARIETAL I</span>
+            <h2 class="panel-title">LITCHI</h2>
+            <p class="panel-quote">"Light, floral, morning-bright."</p>
+            <p class="panel-desc">Litchi-blossom honey, harvested in early spring. Silky, translucent gold with delicate nectar notes from sunlit orchard blossoms.</p>
+          </div>
+
+          <div class="explainer-panel" data-jar="./public/images/product/assam-honey-mustard.jfif" data-badge="02 / MUSTARD HARVEST">
+            <span class="panel-num">VARIETAL II</span>
+            <h2 class="panel-title">MUSTARD</h2>
+            <p class="panel-quote">"Deep, warm, quietly bold."</p>
+            <p class="panel-desc">Mustard-blossom honey, the classic Assam winter harvest. Rich amber body with hints of warm spice and earthy sweetness.</p>
+          </div>
+
+          <div class="explainer-panel" data-jar="./public/images/product/assam-honey-wild.jfif" data-badge="03 / WILD FOREST HARVEST">
+            <span class="panel-num">VARIETAL III</span>
+            <h2 class="panel-title">WILD FOREST</h2>
+            <p class="panel-quote">"Untamed. Harvested by hand."</p>
+            <p class="panel-desc">Dark wild-forest honey, foraged not farmed from ancient mountain canopies. Deep molasses hue, potent antimicrobial complexity, raw and unfiltered.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Macro Accent 2 -->
+    <div class="macro-accent-wrapper accent-left">
+      <div class="macro-accent-card">
+        <img src="./public/images/lifestyle/lifestyle-dipper-drizzle.jfif" alt="Golden Honey Dipper Drizzle" class="macro-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+        <div class="macro-caption">GOLDEN VISCOSITY · ARTISANAL HONEY DIPPER</div>
+      </div>
+    </div>
+
+    <!-- 3. HORIZONTAL COLLECTION RAIL -->
+    <section id="collection-rail-track" class="collection-rail-track">
+      <div id="rail-pin-container" class="rail-pin-container">
+        <div id="rail-flex" class="rail-flex">
+          
+          <!-- Rail Panel 1: Golden Hour Intro -->
+          <div class="rail-panel panel-intro">
+            <div class="rail-bg-img" style="background-image: url('./public/images/background/bg-apiary-golden-hour.jfif');"></div>
+            <div class="rail-overlay"></div>
+            <div class="rail-intro-content">
+              <span class="rail-eyebrow">THE ASSAM VALLEY</span>
+              <h2 class="rail-hero-title">THE COLLECTION</h2>
+              <p class="rail-hero-desc">Three distinct single-origin harvests. Hand-poured into thick weight-heavy glass, sealed with natural wax.</p>
+            </div>
+          </div>
+
+          <!-- Rail Panel 2: Litchi -->
+          <div class="rail-panel panel-product">
+            <div class="rail-card">
+              <div class="rail-card-img-wrap">
+                <img src="./public/images/product/assam-honey-litchi.jfif" alt="Litchi Honey Jar" class="rail-card-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+              </div>
+              <div class="rail-card-info">
+                <span class="rail-card-tag">SPRING ALLOCATION</span>
+                <h3 class="rail-card-title">LITCHI BLOSSOM</h3>
+                <p class="rail-card-text">Harvested in early spring. Crisp, fragrant notes of white blossom and lychee nectar.</p>
+                <a href="#grid-section" class="btn-gold">EXPLORE HARVEST</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rail Panel 3: Mustard -->
+          <div class="rail-panel panel-product">
+            <div class="rail-card">
+              <div class="rail-card-img-wrap">
+                <img src="./public/images/product/assam-honey-mustard.jfif" alt="Mustard Honey Jar" class="rail-card-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+              </div>
+              <div class="rail-card-info">
+                <span class="rail-card-tag">WINTER ALLOCATION</span>
+                <h3 class="rail-card-title">MUSTARD BLOSSOM</h3>
+                <p class="rail-card-text">Harvested in deep winter. Warm, velvety golden nectar with an earthy aromatic finish.</p>
+                <a href="#grid-section" class="btn-gold">EXPLORE HARVEST</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rail Panel 4: Wild Forest -->
+          <div class="rail-panel panel-product">
+            <div class="rail-card">
+              <div class="rail-card-img-wrap">
+                <img src="./public/images/product/assam-honey-wild.jfif" alt="Wild Forest Honey Jar" class="rail-card-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+              </div>
+              <div class="rail-card-info">
+                <span class="rail-card-tag">MOUNTAIN ALLOCATION</span>
+                <h3 class="rail-card-title">WILD FOREST</h3>
+                <p class="rail-card-text">Foraged from high canopy hives. Deep, dark molasses tones with potent natural enzymes.</p>
+                <a href="#grid-section" class="btn-gold">EXPLORE HARVEST</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. STACKING RITUAL CARDS -->
+    <section id="ritual-section" class="ritual-section">
+      <div class="section-header-center">
+        <span class="section-eyebrow">DAILY PRACTICES</span>
+        <h2 class="section-title">THE HONEY RITUALS</h2>
+      </div>
+
+      <div class="ritual-cards-container">
+        
+        <!-- Card 01 -->
+        <div class="ritual-card card-1">
+          <video class="ritual-video" autoplay muted loop playsinline src="./public/videos/card-drizzle.mp4"></video>
+          <div class="ritual-card-overlay"></div>
+          <div class="ritual-card-content">
+            <div class="ritual-num">01</div>
+            <h3 class="ritual-word">DRIZZLE</h3>
+            <p class="ritual-quote">"A ribbon of gold, straight from the comb."</p>
+          </div>
+        </div>
+
+        <!-- Card 02 -->
+        <div class="ritual-card card-2">
+          <video class="ritual-video" autoplay muted loop playsinline src="./public/videos/card-dip.mp4"></video>
+          <div class="ritual-card-overlay"></div>
+          <div class="ritual-card-content">
+            <div class="ritual-num">02</div>
+            <h3 class="ritual-word">DIP</h3>
+            <p class="ritual-quote">"Slow, unhurried, exactly as it should be."</p>
+          </div>
+        </div>
+
+        <!-- Card 03 -->
+        <div class="ritual-card card-3">
+          <video class="ritual-video" autoplay muted loop playsinline src="./public/videos/card-stir.mp4"></video>
+          <div class="ritual-card-overlay"></div>
+          <div class="ritual-card-content">
+            <div class="ritual-num">03</div>
+            <h3 class="ritual-word">STIR</h3>
+            <p class="ritual-quote">"Where the ritual settles into stillness."</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Macro Accent 3 -->
+    <div class="macro-accent-wrapper accent-center">
+      <div class="macro-accent-card">
+        <img src="./public/images/lifestyle/lifestyle-honey-toast.jfif" alt="Warm Honey Toast Ritual" class="macro-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+        <div class="macro-caption">MORNING SERVE · ARTISANAL HONEY ON TOAST</div>
+      </div>
+    </div>
+
+    <!-- 5. PARALLAX STATEMENT -->
+    <section id="statement-section" class="statement-section">
+      <div class="statement-bg" style="background-image: url('./public/images/background/bg-forest-twilight.jfif');"></div>
+      <div class="statement-overlay"></div>
+      <div class="statement-content">
+        <h2 class="statement-title">Nature's own<br><em>sweetness, untouched.</em></h2>
+        <div class="statement-line"></div>
+        <p class="statement-tagline">ASSAM HONEY — Since the first harvest.</p>
+      </div>
+    </section>
+
+    <!-- Archival Storyboard References (Hero Storyboard Assets 1-7) -->
+    <section class="storyboard-archive-section">
+      <div class="section-header-center">
+        <span class="section-eyebrow">ARCHIVAL CHRONICLES</span>
+        <h2 class="section-title">THE SEVEN STAGES OF THE HARVEST</h2>
+      </div>
+      <div class="storyboard-grid">
+        <div class="storyboard-item">
+          <img src="./public/images/hero/image-1-honeycomb-hero.jfif" alt="Stage 1 Hive Selection" class="storyboard-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          <span class="storyboard-label">I. HIVE SELECTION</span>
+        </div>
+        <div class="storyboard-item">
+          <img src="./public/images/hero/image-2-honeycomb-hero.jfif" alt="Stage 2 Comb Inspection" class="storyboard-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          <span class="storyboard-label">II. COMB INSPECTION</span>
+        </div>
+        <div class="storyboard-item">
+          <img src="./public/images/hero/image-3-honeycomb-hero.jfif" alt="Stage 3 Nectar Clarity" class="storyboard-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          <span class="storyboard-label">III. NECTAR CLARITY</span>
+        </div>
+        <div class="storyboard-item">
+          <img src="./public/images/hero/image-4-honeycomb-hero.jfif" alt="Stage 4 Hand Uncapping" class="storyboard-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          <span class="storyboard-label">IV. HAND UNCAPPING</span>
+        </div>
+        <div class="storyboard-item">
+          <img src="./public/images/hero/image-5-honeycomb-hero.jfif" alt="Stage 5 Cold Filtration" class="storyboard-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          <span class="storyboard-label">V. COLD FILTRATION</span>
+        </div>
+        <div class="storyboard-item">
+          <img src="./public/images/hero/image-6-honeycomb-hero.jfif" alt="Stage 6 Amber Pouring" class="storyboard-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          <span class="storyboard-label">VI. AMBER POURING</span>
+        </div>
+        <div class="storyboard-item">
+          <img src="./public/images/hero/image-7-honeycomb-hero.jfif" alt="Stage 7 Wax Sealing" class="storyboard-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          <span class="storyboard-label">VII. WAX SEALING</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. REVERSE COLUMNS -->
+    <section id="reverse-columns-section" class="reverse-columns-section">
+      <div class="reverse-overlay-title">
+        <h3 class="reverse-title">Gathered from the wild.</h3>
+      </div>
+      
+      <div class="reverse-grid">
+        <!-- Col 1 (Parallax Up) -->
+        <div class="reverse-col col-1">
+          <div class="reverse-card">
+            <img src="./public/images/background/bg-apiary-golden-hour.jfif" alt="Apiary Golden Hour" class="reverse-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+            <div class="reverse-card-label">VALLEY APIARY</div>
+          </div>
+          <div class="reverse-card">
+            <img src="./public/images/lifestyle/lifestyle-honeycomb-macro.jfif" alt="Honeycomb Cell Detail" class="reverse-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+            <div class="reverse-card-label">RAW CELLS</div>
+          </div>
+        </div>
+
+        <!-- Col 2 (Parallax Down) -->
+        <div class="reverse-col col-2">
+          <div class="reverse-card">
+            <img src="./public/images/hero/image-3-honeycomb-hero.jfif" alt="Pure Nectar Stream" class="reverse-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+            <div class="reverse-card-label">NECTAR STREAM</div>
+          </div>
+          <div class="reverse-card">
+            <img src="./public/images/background/bg-forest-twilight.jfif" alt="Assam Twilight Canopy" class="reverse-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+            <div class="reverse-card-label">FOREST CANOPY</div>
+          </div>
+        </div>
+
+        <!-- Col 3 (Parallax Up) -->
+        <div class="reverse-col col-3">
+          <div class="reverse-card">
+            <img src="./public/images/lifestyle/lifestyle-dipper-drizzle.jfif" alt="Honey Drizzle Art" class="reverse-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+            <div class="reverse-card-label">SLOW DRIZZLE</div>
+          </div>
+          <div class="reverse-card">
+            <img src="./public/images/background/bg-apiary-golden-hour.jfif" alt="Golden Sunset Field" class="reverse-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+            <div class="reverse-card-label">GOLDEN HOUR</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. PRODUCT COLLECTION GRID -->
+    <section id="grid-section" class="grid-section">
+      <div class="section-header-center">
+        <span class="section-eyebrow">LIMITED ALLOCATIONS</span>
+        <h2 class="section-title">THE HARVEST GRID</h2>
+      </div>
+
+      <div class="product-grid">
+        <!-- Product Card 1 -->
+        <div class="product-card">
+          <div class="product-card-img-wrap">
+            <img src="./public/images/product/assam-honey-litchi.jfif" alt="Litchi Assam Honey Jar" class="product-card-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          </div>
+          <div class="product-card-content">
+            <h3 class="product-name">LITCHI</h3>
+            <p class="product-desc">Harvested from early spring litchi orchards. Light, crisp, delicate floral notes.</p>
+            <div class="product-card-footer">
+              <span class="product-price">$38.00</span>
+              <button class="btn-gold">ADD TO CART</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Card 2 -->
+        <div class="product-card">
+          <div class="product-card-img-wrap">
+            <img src="./public/images/product/assam-honey-mustard.jfif" alt="Mustard Assam Honey Jar" class="product-card-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          </div>
+          <div class="product-card-content">
+            <h3 class="product-name">MUSTARD</h3>
+            <p class="product-desc">Golden winter harvest from Assam's valley fields. Deep, warm, rich spice undertones.</p>
+            <div class="product-card-footer">
+              <span class="product-price">$42.00</span>
+              <button class="btn-gold">ADD TO CART</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Card 3 -->
+        <div class="product-card">
+          <div class="product-card-img-wrap">
+            <img src="./public/images/product/assam-honey-wild.jfif" alt="Wild Forest Assam Honey Jar" class="product-card-img" onerror="if(!this.t){this.t=1;this.src=this.src.replace('.jfif','.png');}">
+          </div>
+          <div class="product-card-content">
+            <h3 class="product-name">WILD FOREST</h3>
+            <p class="product-desc">Foraged deep within high altitude untouched canopies. Dark, complex, raw elixir.</p>
+            <div class="product-card-footer">
+              <span class="product-price">$48.00</span>
+              <button class="btn-gold">ADD TO CART</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. NEWSLETTER -->
+    <section id="newsletter-section" class="newsletter-section">
+      <div class="newsletter-bg" style="background-image: url('./public/images/background/bg-apiary-golden-hour.jfif');"></div>
+      <div class="newsletter-overlay"></div>
+      <div class="newsletter-content">
+        <span class="newsletter-eyebrow">PRIVATE ALLOCATION</span>
+        <h2 class="newsletter-title">Join the ritual.</h2>
+        <p class="newsletter-sub">Subscribe for rare seasonal batch drops and private release allocations directly from the apiary.</p>
+        <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for joining the ritual.');">
+          <input type="email" placeholder="Enter your email address" required class="newsletter-input">
+          <button type="submit" class="btn-gold">SUBSCRIBE</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- 9. FOOTER -->
+    <footer class="site-footer">
+      <div class="footer-container">
+        <h2 class="footer-brand">ASSAM HONEY</h2>
+        <p class="footer-tagline">RAW FROM THE ASSAM HILLS</p>
+        <div class="footer-links">
+          <a href="#hero-track">ORIGIN</a>
+          <a href="#explainer-section">VARIETALS</a>
+          <a href="#collection-rail-track">COLLECTION</a>
+          <a href="#ritual-section">RITUALS</a>
+          <a href="#grid-section">SHOP</a>
+        </div>
+        <div class="footer-divider"></div>
+        <p class="footer-copy">&copy; 2026 ASSAM HONEY. ALL RIGHTS RESERVED.</p>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- GSAP & Lenis CDN Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const TOTAL_FRAMES = 881; // Actual extracted count in public/frames/
+      const INITIAL_PRELOAD_COUNT = 40;
+      
+      // Distinct storage names per rules
+      const frames = new Map();      // Hero frame sequence map
+      const panelImages = [];        // Product explainer panel images array
+
+      const canvas = document.getElementById('hero-canvas');
+      const ctx = canvas.getContext('2d', { alpha: false });
+      const loader = document.getElementById('loader');
+      const loaderBar = document.getElementById('loader-bar');
+      const loaderStatus = document.getElementById('loader-status');
+      const heroTrack = document.getElementById('hero-track');
+      const progressFill = document.getElementById('progress-fill');
+
+      let currentFrameIndex = 1;
+      let scrollDirection = 1;
+      let lastIndex = 1;
+
+      // Initialize Lenis Smooth Scroll
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true
+      });
+
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+
+      // Cover-Fit Canvas Sizing & Rendering
+      function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        renderFrame(currentFrameIndex);
+      }
+      window.addEventListener('resize', resizeCanvas);
+
+      function drawImageCover(img) {
+        if (!img || !img.complete || img.naturalWidth === 0) return;
+        const cw = canvas.width;
+        const ch = canvas.height;
+        const iw = img.naturalWidth;
+        const ih = img.naturalHeight;
+        const imgAspect = iw / ih;
+        const canvasAspect = cw / ch;
+        let dw, dh, ox, oy;
+
+        if (canvasAspect > imgAspect) {
+          dw = cw;
+          dh = cw / imgAspect;
+          ox = 0;
+          oy = (ch - dh) / 2;
+        } else {
+          dh = ch;
+          dw = ch * imgAspect;
+          ox = (cw - dw) / 2;
+          oy = 0;
+        }
+
+        ctx.clearRect(0, 0, cw, ch);
+        ctx.drawImage(img, ox, oy, dw, dh);
+      }
+
+      function renderFrame(index) {
+        const targetImg = frames.get(index);
+        if (targetImg && targetImg.complete && targetImg.naturalWidth > 0) {
+          drawImageCover(targetImg);
+          return;
+        }
+
+        // Fallback to nearest decoded frame in rolling cache if target frame is decoding
+        let nearest = null;
+        let minDiff = Infinity;
+        for (let [k, v] of frames.entries()) {
+          if (v && v.complete && v.naturalWidth > 0) {
+            const diff = Math.abs(k - index);
+            if (diff < minDiff) {
+              minDiff = diff;
+              nearest = v;
+            }
+          }
+        }
+        if (nearest) {
+          drawImageCover(nearest);
+        }
+      }
+
+      function loadSingleFrame(idx, onSingleLoad) {
+        if (idx < 1 || idx > TOTAL_FRAMES || frames.has(idx)) return;
+        const img = new Image();
+        const padded = String(idx).padStart(4, '0');
+        img.src = `./public/frames/frame_${padded}.jpg`;
+        frames.set(idx, img);
+        img.onload = () => {
+          if (onSingleLoad) onSingleLoad(idx);
+          if (idx === currentFrameIndex) renderFrame(idx);
+        };
+        img.onerror = () => {
+          frames.delete(idx);
+        };
+      }
+
+      // Initial Preload: Only 40 frames before revealing page
+      let initialLoaded = 0;
+      function preloadInitial40() {
+        for (let i = 1; i <= INITIAL_PRELOAD_COUNT; i++) {
+          loadSingleFrame(i, () => {
+            initialLoaded++;
+            const pct = Math.round((initialLoaded / INITIAL_PRELOAD_COUNT) * 100);
+            loaderBar.style.width = pct + '%';
+            loaderStatus.textContent = `PRELOADING HARVEST (${initialLoaded} / ${INITIAL_PRELOAD_COUNT})`;
+            if (initialLoaded === INITIAL_PRELOAD_COUNT) {
+              revealPage();
+            }
+          });
+        }
+        // Safety timeout fallback
+        setTimeout(() => {
+          if (!loader.classList.contains('hidden')) {
+            revealPage();
+          }
+        }, 1200);
+      }
+
+      function revealPage() {
+        loader.classList.add('hidden');
+        resizeCanvas();
+        renderFrame(1);
+        updateRollingCache(1, 1);
+      }
+
+      // Rolling Cache & JIT Prefetch Window Management
+      function updateRollingCache(currentIndex, direction) {
+        const windowSize = 60;
+        const prefetchExtra = 15;
+        
+        const minKeep = Math.max(1, currentIndex - (windowSize + prefetchExtra));
+        const maxKeep = Math.min(TOTAL_FRAMES, currentIndex + (windowSize + prefetchExtra));
+
+        // Prune frames outside window from cache for garbage collection
+        for (let [idx, img] of frames.entries()) {
+          if (idx < minKeep || idx > maxKeep) {
+            if (img) img.src = '';
+            frames.delete(idx);
+          }
+        }
+
+        // Prefetch window around currentIndex
+        let startFetch = Math.max(1, currentIndex - windowSize);
+        let endFetch = Math.min(TOTAL_FRAMES, currentIndex + windowSize);
+
+        if (direction > 0) {
+          endFetch = Math.min(TOTAL_FRAMES, currentIndex + windowSize + prefetchExtra);
+        } else if (direction < 0) {
+          startFetch = Math.max(1, currentIndex - (windowSize + prefetchExtra));
+        }
+
+        for (let i = startFetch; i <= endFetch; i++) {
+          loadSingleFrame(i);
+        }
+      }
+
+      // Calculate progress from getBoundingClientRect() of pinned hero track
+      function getHeroProgress() {
+        const rect = heroTrack.getBoundingClientRect();
+        const totalScrollable = rect.height - window.innerHeight;
+        if (totalScrollable <= 0) return 0;
+        const rawProgress = -rect.top / totalScrollable;
+        return Math.max(0, Math.min(1, rawProgress));
+      }
+
+      // Hero Frame Sequence Update
+      function updateHero() {
+        const progress = getHeroProgress();
+        const targetFrame = 1 + Math.round(progress * (TOTAL_FRAMES - 1));
+
+        if (targetFrame !== lastIndex) {
+          scrollDirection = targetFrame > lastIndex ? 1 : -1;
+          lastIndex = targetFrame;
+        }
+
+        currentFrameIndex = targetFrame;
+        renderFrame(targetFrame);
+        updateRollingCache(targetFrame, scrollDirection);
+
+        // Hero Text Overlays Progress Logic:
+        // progress 0.15 - 0.25: ASSAM HONEY
+        // progress 0.35 - 0.45: Raw from the Assam hills.
+        // progress 0.55 - 0.67: LITCHI · MUSTARD · WILD FOREST
+        // progress 0.70 - 0.80: One drop. A thousand blossoms.
+        setOverlayOpacity('hero-text-1', getRangeOpacity(progress, 0.15, 0.25));
+        setOverlayOpacity('hero-text-2', getRangeOpacity(progress, 0.35, 0.45));
+        setOverlayOpacity('hero-text-3', getRangeOpacity(progress, 0.55, 0.67));
+        setOverlayOpacity('hero-text-4', getRangeOpacity(progress, 0.70, 0.80));
+      }
+
+      function getRangeOpacity(p, start, end) {
+        const fadeWindow = 0.035;
+        if (p < start - fadeWindow || p > end + fadeWindow) return 0;
+        if (p >= start && p <= end) return 1;
+        if (p < start) return (p - (start - fadeWindow)) / fadeWindow;
+        if (p > end) return 1 - ((p - end) / fadeWindow);
+        return 0;
+      }
+
+      function setOverlayOpacity(id, opacity) {
+        const el = document.getElementById(id);
+        if (el) el.style.opacity = opacity;
+      }
+
+      // Update Fixed Right Edge Progress Bar
+      function updateProgressBar() {
+        const totalDocHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (totalDocHeight > 0) {
+          const scrollPct = (window.scrollY / totalDocHeight) * 100;
+          progressFill.style.height = Math.min(100, Math.max(0, scrollPct)) + '%';
+        }
+      }
+
+      window.addEventListener('scroll', () => {
+        updateHero();
+        updateProgressBar();
+      });
+
+      // IntersectionObserver for Sticky Explainer Product Jar Swap
+      const stickyImg = document.getElementById('sticky-product-img');
+      const stickyBadge = document.getElementById('sticky-product-badge');
+      const explainerPanels = document.querySelectorAll('.explainer-panel');
+
+      const explainerObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const jarSrc = entry.target.getAttribute('data-jar');
+            const badgeText = entry.target.getAttribute('data-badge');
+            if (jarSrc && stickyImg.src !== jarSrc) {
+              stickyImg.style.opacity = '0';
+              stickyImg.style.transform = 'scale(0.94)';
+              setTimeout(() => {
+                stickyImg.src = jarSrc;
+                stickyBadge.textContent = badgeText;
+                stickyImg.style.opacity = '1';
+                stickyImg.style.transform = 'scale(1)';
+              }, 220);
+            }
+          }
+        });
+      }, { threshold: 0.5 });
+
+      explainerPanels.forEach(panel => explainerObserver.observe(panel));
+
+      // Horizontal Collection Rail Pinned GSAP Scroll
+      const railFlex = document.getElementById('rail-flex');
+      if (railFlex) {
+        gsap.to(railFlex, {
+          x: () => -(railFlex.scrollWidth - window.innerWidth),
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#collection-rail-track",
+            pin: true,
+            scrub: 1,
+            end: () => "+=" + (railFlex.scrollWidth - window.innerWidth),
+            invalidateOnRefresh: true
+          }
+        });
+      }
+
+      // Parallax Statement Background Movement
+      const statementBg = document.querySelector('.statement-bg');
+      if (statementBg) {
+        gsap.to(statementBg, {
+          y: "22%",
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#statement-section",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+      }
+
+      // Reverse Columns Alternating Vertical Parallax
+      const col1 = document.querySelector('.col-1');
+      const col2 = document.querySelector('.col-2');
+      const col3 = document.querySelector('.col-3');
+
+      if (col1 && col2 && col3) {
+        gsap.to(col1, {
+          y: "-140px",
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#reverse-columns-section",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+        gsap.to(col2, {
+          y: "140px",
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#reverse-columns-section",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+        gsap.to(col3, {
+          y: "-140px",
+          ease: "none",
+          scrollTrigger: {
+            trigger: "#reverse-columns-section",
+            start: "top bottom",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+      }
+
+      // Preload initial 40 frames and kick off
+      preloadInitial40();
+
+      // MUST end script with ScrollTrigger.refresh()
+      ScrollTrigger.refresh();
+    });
+  </script>
+</body>
+</html>
