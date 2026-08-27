@@ -1,0 +1,1184 @@
+/* ==========================================================================
+       CORE DESIGN SYSTEM & RESET
+       ========================================================================== */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #0A0908;
+    color: #F5F5F0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: clip;
+    /* CRITICAL: overflow-x: clip preserves position: sticky */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Off-white for ALL text elements */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+label,
+button,
+input,
+div {
+    color: #F5F5F0;
+}
+
+/* Headings Typography */
+h1,
+h2,
+h3,
+.font-serif {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 300;
+}
+
+/* Gold accent color is NEVER used as text color. Only for buttons, borders, lines, progress fill */
+.accent-gold-bg {
+    background-color: #D4AF37;
+}
+
+.accent-gold-border {
+    border-color: #D4AF37;
+}
+
+/* Button Styling */
+.btn-gold {
+    background-color: #D4AF37;
+    color: #0A0908 !important;
+    /* Dark text inside gold button */
+    border: 1px solid #D4AF37;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    padding: 0.85rem 2rem;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+    text-transform: uppercase;
+    border-radius: 0px;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.btn-gold:hover {
+    background-color: #F5F5F0;
+    border-color: #F5F5F0;
+    color: #0A0908 !important;
+    box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+}
+
+/* ==========================================================================
+       LOADING SCREEN
+       ========================================================================== */
+.loader-screen {
+    position: fixed;
+    inset: 0;
+    background: #0A0908;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), visibility 0.6s ease;
+}
+
+.loader-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.loader-content {
+    text-align: center;
+    max-width: 340px;
+    width: 85%;
+}
+
+.loader-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    letter-spacing: 8px;
+    color: #F5F5F0;
+    margin-bottom: 2rem;
+    font-weight: 300;
+}
+
+.loader-bar-bg {
+    width: 100%;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.loader-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #D4AF37;
+    transition: width 0.15s ease-out;
+}
+
+.loader-status {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #A0A09C;
+    text-transform: uppercase;
+}
+
+/* ==========================================================================
+       NAVIGATION & PROGRESS BAR
+       ========================================================================== */
+.fixed-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    padding: 2.2rem 3.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.nav-brand,
+.nav-shop {
+    pointer-events: auto;
+    color: #F5F5F0;
+    text-decoration: none;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 400;
+    transition: opacity 0.3s ease;
+}
+
+.nav-brand:hover,
+.nav-shop:hover {
+    opacity: 0.65;
+}
+
+/* Fixed Scroll Progress Bar on Right Edge */
+.progress-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100vh;
+    background: rgba(212, 175, 55, 0.18);
+    z-index: 100;
+    pointer-events: none;
+}
+
+.progress-fill {
+    width: 100%;
+    height: 0%;
+    background: #D4AF37;
+    transform-origin: top;
+    transition: height 0.05s linear;
+}
+
+/* ==========================================================================
+       SECTION 1: HERO CANVAS & OVERLAYS
+       ========================================================================== */
+.hero-track {
+    position: relative;
+    height: 550vh;
+    /* Track for 881 hero frames */
+    background: #0A0908;
+}
+
+.hero-pin {
+    position: sticky;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #0A0908;
+}
+
+/* Static poster behind canvas before frames decode */
+.hero-poster {
+    position: absolute;
+    inset: 0;
+    background-image: url('./public/images/hero/image-1-honeycomb-hero.jfif');
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.65);
+    z-index: 1;
+}
+
+#hero-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: block;
+    z-index: 2;
+}
+
+/* Text Overlays */
+.hero-overlay {
+    position: absolute;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.hero-title {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.5rem, 8vw, 96px);
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    color: #F5F5F0;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.hero-sub {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.5rem, 3vw, 28px);
+    font-style: italic;
+    font-weight: 300;
+    color: #F5F5F0;
+    text-align: center;
+}
+
+.hero-varieties {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 5vw, 60px);
+    font-weight: 300;
+    letter-spacing: 0.1em;
+    color: #F5F5F0;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.hero-tagline {
+    top: 10%;
+    left: 8%;
+    width: auto;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    color: #F5F5F0;
+    text-transform: uppercase;
+}
+
+/* ==========================================================================
+       SECTION 2: STICKY PRODUCT EXPLAINER
+       ========================================================================== */
+.explainer-section {
+    position: relative;
+    height: 300vh;
+    background: #0C0B0A;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.explainer-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.explainer-left {
+    width: 50%;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(32, 27, 21, 0.9), rgba(10, 9, 8, 1));
+    border-right: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.explainer-img-frame {
+    position: relative;
+    width: 75%;
+    max-width: 420px;
+    aspect-ratio: 3/4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.explainer-glow {
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.22) 0%, rgba(0, 0, 0, 0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(25px);
+}
+
+.explainer-jar-img {
+    max-width: 100%;
+    max-height: 80%;
+    object-fit: contain;
+    filter: drop-shadow(0 25px 45px rgba(0, 0, 0, 0.85));
+    transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.explainer-badge {
+    margin-top: 1.8rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #F5F5F0;
+    border-bottom: 1px solid #D4AF37;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.explainer-right {
+    width: 50%;
+}
+
+.explainer-panel {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 5rem;
+    box-sizing: border-box;
+}
+
+.panel-num {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #A0A09C;
+    margin-bottom: 1.2rem;
+    display: block;
+}
+
+.panel-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 5.5vw, 68px);
+    font-weight: 300;
+    color: #F5F5F0;
+    margin: 0 0 1.2rem 0;
+    letter-spacing: 0.06em;
+}
+
+.panel-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.4rem, 2.2vw, 26px);
+    font-style: italic;
+    color: #F5F5F0;
+    margin-bottom: 1.8rem;
+    line-height: 1.4;
+}
+
+.panel-desc {
+    font-size: 15px;
+    line-height: 1.85;
+    color: #D5D5D0;
+    max-width: 460px;
+}
+
+/* ==========================================================================
+       SECTION 3: HORIZONTAL COLLECTION RAIL
+       ========================================================================== */
+.collection-rail-track {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+    background: #0A0908;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.rail-pin-container {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.rail-flex {
+    display: flex;
+    width: 400vw;
+    height: 100vh;
+    will-change: transform;
+}
+
+.rail-panel {
+    width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.panel-intro {
+    position: relative;
+}
+
+.rail-bg-img {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.55);
+}
+
+.rail-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 9, 8, 0.3) 0%, rgba(10, 9, 8, 0.85) 100%);
+}
+
+.rail-intro-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 650px;
+    padding: 2.5rem;
+}
+
+.rail-eyebrow {
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: #A0A09C;
+    margin-bottom: 1.2rem;
+    display: block;
+}
+
+.rail-hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3.2rem, 7.5vw, 88px);
+    font-weight: 300;
+    color: #F5F5F0;
+    letter-spacing: 0.12em;
+    margin: 0 0 1.5rem 0;
+}
+
+.rail-hero-desc {
+    font-size: 16px;
+    line-height: 1.85;
+    color: #E0E0DB;
+}
+
+.panel-product {
+    background: #0E0D0B;
+    padding: 4rem;
+}
+
+.rail-card {
+    display: flex;
+    align-items: center;
+    gap: 4.5rem;
+    max-width: 920px;
+    width: 90%;
+    background: rgba(22, 19, 16, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    padding: 3.5rem;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+.rail-card-img-wrap {
+    width: 280px;
+    height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rail-card-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 18px 35px rgba(0, 0, 0, 0.85));
+}
+
+.rail-card-info {
+    flex: 1;
+}
+
+.rail-card-tag {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #F5F5F0;
+    border-left: 2px solid #D4AF37;
+    padding-left: 8px;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.rail-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 3.5vw, 44px);
+    font-weight: 300;
+    color: #F5F5F0;
+    margin: 0 0 1.2rem 0;
+    letter-spacing: 0.05em;
+}
+
+.rail-card-text {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #D5D5D0;
+    margin-bottom: 2rem;
+}
+
+/* ==========================================================================
+       SECTION 4: STACKING RITUAL CARDS
+       ========================================================================== */
+.ritual-section {
+    position: relative;
+    padding: 9rem 2rem 12rem 2rem;
+    background: #0A0908;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.section-header-center {
+    text-align: center;
+    margin-bottom: 5rem;
+}
+
+.section-eyebrow {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #A0A09C;
+    display: block;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+}
+
+.section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.4rem, 4.5vw, 58px);
+    font-weight: 300;
+    color: #F5F5F0;
+    letter-spacing: 0.08em;
+    margin: 0;
+}
+
+.ritual-cards-container {
+    position: relative;
+    max-width: 1020px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
+}
+
+.ritual-card {
+    position: sticky;
+    height: 68vh;
+    min-height: 460px;
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    background: #12100E;
+    box-shadow: 0 -15px 45px rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: flex-end;
+    padding: 4.5rem;
+    box-sizing: border-box;
+}
+
+.card-1 {
+    top: 12vh;
+}
+
+.card-2 {
+    top: 16vh;
+}
+
+.card-3 {
+    top: 20vh;
+}
+
+.ritual-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.52) contrast(1.08);
+}
+
+.ritual-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(10, 9, 8, 0.95) 0%, rgba(10, 9, 8, 0.2) 65%);
+}
+
+.ritual-card-content {
+    position: relative;
+    z-index: 2;
+}
+
+.ritual-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    color: #F5F5F0;
+    margin-bottom: 0.6rem;
+    border-bottom: 1px solid #D4AF37;
+    display: inline-block;
+    padding-bottom: 2px;
+}
+
+.ritual-word {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 5.5vw, 68px);
+    font-weight: 300;
+    color: #F5F5F0;
+    margin: 0 0 1rem 0;
+    letter-spacing: 0.12em;
+}
+
+.ritual-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.3rem, 2.2vw, 26px);
+    font-style: italic;
+    color: #F5F5F0;
+    margin: 0;
+}
+
+/* ==========================================================================
+       SECTION 5: PARALLAX STATEMENT
+       ========================================================================== */
+.statement-section {
+    position: relative;
+    height: 90vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.statement-bg {
+    position: absolute;
+    inset: -15% 0;
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+    filter: brightness(0.5);
+}
+
+.statement-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(10, 9, 8, 0.45) 0%, rgba(10, 9, 8, 0.92) 100%);
+}
+
+.statement-content {
+    position: relative;
+    z-index: 2;
+    padding: 2.5rem;
+    max-width: 850px;
+}
+
+.statement-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 6.5vw, 76px);
+    font-weight: 300;
+    color: #F5F5F0;
+    line-height: 1.25;
+    margin: 0 0 2.2rem 0;
+    letter-spacing: 0.04em;
+}
+
+.statement-title em {
+    font-style: italic;
+    font-weight: 300;
+}
+
+.statement-line {
+    width: 70px;
+    height: 1px;
+    background: #D4AF37;
+    margin: 0 auto 2.2rem auto;
+}
+
+.statement-tagline {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 4px;
+    color: #F5F5F0;
+    text-transform: uppercase;
+}
+
+/* ==========================================================================
+       MACRO ACCENTS & ARCHIVAL STORYBOARD
+       ========================================================================== */
+.macro-accent-wrapper {
+    padding: 5rem 2rem;
+    display: flex;
+    background: #0A0908;
+}
+
+.accent-right {
+    justify-content: flex-end;
+    padding-right: 12vw;
+}
+
+.accent-left {
+    justify-content: flex-start;
+    padding-left: 12vw;
+}
+
+.accent-center {
+    justify-content: center;
+}
+
+.macro-accent-card {
+    max-width: 340px;
+    background: rgba(22, 19, 16, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    padding: 1rem;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+}
+
+.macro-img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    filter: contrast(1.1) brightness(0.92);
+    margin-bottom: 0.8rem;
+}
+
+.macro-caption {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    color: #D5D5D0;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.storyboard-archive-section {
+    padding: 9rem 2rem;
+    background: #0A0908;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.storyboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.5rem;
+    max-width: 1250px;
+    margin: 0 auto;
+}
+
+.storyboard-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(20, 18, 15, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1rem;
+    transition: transform 0.35s ease, border-color 0.35s ease;
+}
+
+.storyboard-item:hover {
+    transform: translateY(-5px);
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+.storyboard-img {
+    width: 100%;
+    aspect-ratio: 16/10;
+    object-fit: cover;
+    filter: grayscale(0.15) contrast(1.08);
+    margin-bottom: 0.8rem;
+}
+
+.storyboard-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #E0E0DB;
+    text-align: center;
+}
+
+/* ==========================================================================
+       SECTION 6: REVERSE COLUMNS
+       ========================================================================== */
+.reverse-columns-section {
+    position: relative;
+    padding: 11rem 2rem;
+    background: #080706;
+    overflow: hidden;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.reverse-overlay-title {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: center;
+    pointer-events: none;
+    width: 100%;
+}
+
+.reverse-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 6.5vw, 80px);
+    font-style: italic;
+    color: #F5F5F0;
+    text-shadow: 0 12px 40px rgba(0, 0, 0, 0.95);
+    margin: 0;
+    font-weight: 300;
+}
+
+.reverse-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 850px;
+}
+
+.reverse-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    will-change: transform;
+}
+
+.reverse-card {
+    position: relative;
+    background: #14120F;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    overflow: hidden;
+}
+
+.reverse-img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.65) contrast(1.08);
+    transition: transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.reverse-card:hover .reverse-img {
+    transform: scale(1.06);
+}
+
+.reverse-card-label {
+    position: absolute;
+    bottom: 1.2rem;
+    left: 1.5rem;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #F5F5F0;
+    background: rgba(10, 9, 8, 0.75);
+    padding: 5px 12px;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+/* ==========================================================================
+       SECTION 7: PRODUCT COLLECTION GRID
+       ========================================================================== */
+.grid-section {
+    padding: 9rem 2rem 11rem 2rem;
+    background: #0A0908;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 3.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.product-card {
+    background: rgba(22, 19, 16, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    border-color: #D4AF37;
+    box-shadow: 0 15px 40px rgba(212, 175, 55, 0.28);
+}
+
+.product-card-img-wrap {
+    width: 100%;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2.2rem;
+}
+
+.product-card-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.85));
+}
+
+.product-card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.product-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 300;
+    color: #F5F5F0;
+    margin: 0 0 0.8rem 0;
+    letter-spacing: 0.06em;
+}
+
+.product-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #D5D5D0;
+    margin-bottom: 2.2rem;
+    flex: 1;
+}
+
+.product-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.product-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    color: #F5F5F0;
+}
+
+/* ==========================================================================
+       SECTION 8: NEWSLETTER
+       ========================================================================== */
+.newsletter-section {
+    position: relative;
+    padding: 11rem 2rem;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.newsletter-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: brightness(0.4);
+}
+
+.newsletter-overlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(10, 9, 8, 0.65) 0%, rgba(10, 9, 8, 0.96) 100%);
+}
+
+.newsletter-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 620px;
+    width: 100%;
+}
+
+.newsletter-eyebrow {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #A0A09C;
+    display: block;
+    margin-bottom: 1.2rem;
+}
+
+.newsletter-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.8rem, 5.5vw, 68px);
+    font-weight: 300;
+    color: #F5F5F0;
+    margin: 0 0 1.2rem 0;
+}
+
+.newsletter-sub {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #D5D5D0;
+    margin-bottom: 2.8rem;
+}
+
+.newsletter-form {
+    display: flex;
+    gap: 0.8rem;
+    max-width: 520px;
+    margin: 0 auto;
+}
+
+.newsletter-input {
+    flex: 1;
+    padding: 0.95rem 1.4rem;
+    background: rgba(10, 9, 8, 0.85);
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    color: #F5F5F0;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.newsletter-input:focus {
+    border-color: #D4AF37;
+}
+
+/* ==========================================================================
+       SECTION 9: FOOTER
+       ========================================================================== */
+.site-footer {
+    padding: 6rem 2rem 4rem 2rem;
+    background: #060504;
+    border-top: 1px solid rgba(212, 175, 55, 0.15);
+    text-align: center;
+}
+
+.footer-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.footer-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    letter-spacing: 6px;
+    color: #F5F5F0;
+    margin: 0 0 0.6rem 0;
+    font-weight: 300;
+}
+
+.footer-tagline {
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: #A0A09C;
+    margin-bottom: 3rem;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    margin-bottom: 3rem;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    color: #F5F5F0;
+    text-decoration: none;
+    font-size: 11px;
+    letter-spacing: 3px;
+    transition: opacity 0.3s ease;
+}
+
+.footer-links a:hover {
+    opacity: 0.6;
+}
+
+.footer-divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(212, 175, 55, 0.3);
+    margin: 0 auto 2.5rem auto;
+}
+
+.footer-copy {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #777773;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 900px) {
+    .explainer-container {
+        flex-direction: column;
+    }
+
+    .explainer-left {
+        width: 100%;
+        height: 50vh;
+    }
+
+    .explainer-right {
+        width: 100%;
+    }
+
+    .explainer-panel {
+        padding: 0 2rem;
+    }
+
+    .rail-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 2rem;
+        padding: 2rem;
+    }
+
+    .rail-card-img-wrap {
+        width: 100%;
+        height: 240px;
+    }
+
+    .reverse-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .newsletter-form {
+        flex-direction: column;
+    }
+
+    .fixed-nav {
+        padding: 1.5rem 1.8rem;
+    }
+}
