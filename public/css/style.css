@@ -140,6 +140,34 @@ h3,
 }
 
 /* ==========================================================================
+       CURSOR GLOW FOLLOWER
+       ========================================================================== */
+.cursor-glow {
+    position: fixed;
+    width: 350px;
+    height: 350px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.045) 0%, transparent 70%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 9998;
+    transition: opacity 0.3s ease;
+    will-change: transform;
+}
+
+/* Grain overlay for cinematic texture */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.028;
+    pointer-events: none;
+    z-index: 9990;
+    mix-blend-mode: overlay;
+}
+
+/* ==========================================================================
        NAVIGATION & PROGRESS BAR
        ========================================================================== */
 .fixed-nav {
@@ -504,66 +532,114 @@ h3,
 }
 
 .panel-product {
-    background: #0E0D0B;
-    padding: 4rem;
+    background: #000;
+    padding: 0;
 }
 
-.rail-card {
+/* ===== CINEMATIC RAIL CARD (full-bleed) ===== */
+.rail-cinema-card {
+    position: relative;
+    width: 80vw;
+    max-width: 1100px;
+    height: 82vh;
+    overflow: hidden;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
+    cursor: default;
+    transition: border-color 0.5s ease;
+}
+
+.rail-cinema-card:hover {
+    border-color: rgba(212, 175, 55, 0.5);
+}
+
+.rail-cinema-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transform: scale(1.04);
+    transition: transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+    filter: brightness(0.75) contrast(1.08) saturate(1.1);
+}
+
+.rail-cinema-card:hover .rail-cinema-img {
+    transform: scale(1.0);
+}
+
+.rail-cinema-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to top,
+        rgba(6, 5, 4, 0.97) 0%,
+        rgba(6, 5, 4, 0.7) 35%,
+        rgba(6, 5, 4, 0.08) 65%,
+        rgba(6, 5, 4, 0.0) 100%
+    );
+    z-index: 1;
+}
+
+.rail-cinema-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 3.5rem 4rem;
+    z-index: 2;
     display: flex;
-    align-items: center;
-    gap: 4.5rem;
-    max-width: 920px;
-    width: 90%;
-    background: rgba(22, 19, 16, 0.85);
-    border: 1px solid rgba(212, 175, 55, 0.25);
-    padding: 3.5rem;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    flex-direction: column;
+    align-items: flex-start;
 }
 
-.rail-card-img-wrap {
-    width: 280px;
-    height: 360px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.rail-card-img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 18px 35px rgba(0, 0, 0, 0.85));
-}
-
-.rail-card-info {
-    flex: 1;
-}
-
-.rail-card-tag {
+.rail-cinema-allocation {
+    font-family: 'Inter', sans-serif;
     font-size: 10px;
-    letter-spacing: 3px;
-    color: #F5F5F0;
-    border-left: 2px solid #D4AF37;
-    padding-left: 8px;
-    margin-bottom: 1rem;
+    letter-spacing: 4px;
+    color: #A0A09C;
+    text-transform: uppercase;
+    margin-bottom: 0.7rem;
     display: block;
+    border-left: 2px solid #D4AF37;
+    padding-left: 10px;
 }
 
-.rail-card-title {
+.rail-cinema-title {
     font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(2rem, 3.5vw, 44px);
+    font-size: clamp(3.2rem, 5.5vw, 76px);
     font-weight: 300;
     color: #F5F5F0;
     margin: 0 0 1.2rem 0;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
+    line-height: 1.0;
 }
 
-.rail-card-text {
-    font-size: 15px;
-    line-height: 1.8;
-    color: #D5D5D0;
+.rail-cinema-desc {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #C8C8C4;
     margin-bottom: 2rem;
+    max-width: 420px;
+}
+
+.rail-cinema-btn {
+    align-self: flex-start;
+}
+
+.rail-cinema-index {
+    position: absolute;
+    top: 2.5rem;
+    right: 3rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(5rem, 9vw, 120px);
+    font-weight: 300;
+    color: rgba(245, 245, 240, 0.06);
+    letter-spacing: 0.05em;
+    z-index: 2;
+    line-height: 1;
+    user-select: none;
 }
 
 /* ==========================================================================
@@ -1167,16 +1243,17 @@ h3,
         padding: 0 2rem;
     }
 
-    .rail-card {
-        flex-direction: column;
-        text-align: center;
-        gap: 2rem;
-        padding: 2rem;
+    .rail-cinema-card {
+        width: 92vw;
+        height: 75vh;
     }
 
-    .rail-card-img-wrap {
-        width: 100%;
-        height: 240px;
+    .rail-cinema-info {
+        padding: 2.5rem 2rem;
+    }
+
+    .rail-cinema-title {
+        font-size: clamp(2.2rem, 7vw, 48px);
     }
 
     .reverse-grid {
@@ -1190,4 +1267,4 @@ h3,
     .fixed-nav {
         padding: 1.5rem 1.8rem;
     }
-}
+}

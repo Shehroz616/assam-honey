@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Distinct storage names per rules
     const frames = new Map();      // Hero frame sequence map
-    const panelImages = [];        // Product explainer panel images array
 
     const canvas = document.getElementById('hero-canvas');
     const ctx = canvas.getContext('2d', { alpha: false });
@@ -133,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resizeCanvas();
         renderFrame(1);
         updateRollingCache(1, 1);
+        initScrollAnimations();
     }
 
     // Rolling Cache & JIT Prefetch Window Management
@@ -189,11 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderFrame(targetFrame);
         updateRollingCache(targetFrame, scrollDirection);
 
-        // Hero Text Overlays Progress Logic:
-        // progress 0.15 - 0.25: ASSAM HONEY
-        // progress 0.35 - 0.45: Raw from the Assam hills.
-        // progress 0.55 - 0.67: LITCHI · MUSTARD · WILD FOREST
-        // progress 0.70 - 0.80: One drop. A thousand blossoms.
+        // Hero Text Overlays Progress Logic
         setOverlayOpacity('hero-text-1', getRangeOpacity(progress, 0.15, 0.25));
         setOverlayOpacity('hero-text-2', getRangeOpacity(progress, 0.35, 0.45));
         setOverlayOpacity('hero-text-3', getRangeOpacity(progress, 0.55, 0.67));
@@ -323,9 +319,170 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // ====================================================================
+    //  SCROLL-TRIGGERED ENTRANCE ANIMATIONS
+    // ====================================================================
+    function initScrollAnimations() {
+
+        // Storyboard items: staggered fade-up
+        const storyboardItems = document.querySelectorAll('.storyboard-item');
+        if (storyboardItems.length) {
+            gsap.fromTo(storyboardItems,
+                { opacity: 0, y: 40 },
+                {
+                    opacity: 1, y: 0,
+                    duration: 0.7,
+                    ease: 'power2.out',
+                    stagger: 0.08,
+                    scrollTrigger: {
+                        trigger: '.storyboard-archive-section',
+                        start: 'top 80%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        }
+
+        // Product grid cards: stagger fade + lift
+        const productCards = document.querySelectorAll('.product-card');
+        if (productCards.length) {
+            gsap.fromTo(productCards,
+                { opacity: 0, y: 50 },
+                {
+                    opacity: 1, y: 0,
+                    duration: 0.85,
+                    ease: 'power3.out',
+                    stagger: 0.15,
+                    scrollTrigger: {
+                        trigger: '.product-grid',
+                        start: 'top 82%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        }
+
+        // Section headers: elegant fade-up
+        const sectionHeaders = document.querySelectorAll('.section-header-center');
+        sectionHeaders.forEach(header => {
+            gsap.fromTo(header,
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1, y: 0,
+                    duration: 1,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: header,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        });
+
+        // Statement section title
+        const statementTitle = document.querySelector('.statement-title');
+        if (statementTitle) {
+            gsap.fromTo(statementTitle,
+                { opacity: 0, y: 28 },
+                {
+                    opacity: 1, y: 0,
+                    duration: 1.4,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: '.statement-section',
+                        start: 'top 70%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        }
+
+        // Newsletter content: fade up
+        const nlContent = document.querySelector('.newsletter-content');
+        if (nlContent) {
+            gsap.fromTo(nlContent,
+                { opacity: 0, y: 35 },
+                {
+                    opacity: 1, y: 0,
+                    duration: 1,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: '.newsletter-section',
+                        start: 'top 75%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        }
+
+        // Ritual cards: each slides up slightly as it enters view
+        const ritualCards = document.querySelectorAll('.ritual-card');
+        ritualCards.forEach((card, i) => {
+            gsap.fromTo(card.querySelector('.ritual-card-content'),
+                { opacity: 0, y: 20 },
+                {
+                    opacity: 1, y: 0,
+                    duration: 0.9,
+                    delay: i * 0.05,
+                    ease: 'power2.out',
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 75%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        });
+
+        // Reverse-columns images: subtle entrance
+        const reverseCards = document.querySelectorAll('.reverse-card');
+        if (reverseCards.length) {
+            gsap.fromTo(reverseCards,
+                { opacity: 0 },
+                {
+                    opacity: 1,
+                    duration: 1.2,
+                    ease: 'power2.out',
+                    stagger: 0.1,
+                    scrollTrigger: {
+                        trigger: '#reverse-columns-section',
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    }
+                }
+            );
+        }
+    }
+
     // Preload initial 40 frames and kick off
     preloadInitial40();
 
     // MUST end script with ScrollTrigger.refresh()
     ScrollTrigger.refresh();
+
+    // ====================================================================
+    //  CURSOR GLOW FOLLOWER
+    // ====================================================================
+    const cursorGlow = document.getElementById('cursor-glow');
+    if (cursorGlow) {
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+        let glowX = mouseX;
+        let glowY = mouseY;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            glowX += (mouseX - glowX) * 0.08;
+            glowY += (mouseY - glowY) * 0.08;
+            cursorGlow.style.left = glowX + 'px';
+            cursorGlow.style.top = glowY + 'px';
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+    }
 });
