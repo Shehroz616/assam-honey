@@ -20,12 +20,27 @@
 
   <link rel="stylesheet" href="public/css/style.css">
 
+  <!-- three.js via CDN (ES module import map — no bundler needed) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.169.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+
 </head>
 
 <body>
 
   <!-- Cursor Glow Follower -->
   <div class="cursor-glow" id="cursor-glow"></div>
+
+  <!-- Flying Bee Guide (3D, follows scroll between sections) -->
+  <div id="bee-container" aria-hidden="true">
+    <canvas id="bee-canvas"></canvas>
+  </div>
 
   <!-- Loading Screen -->
   <div id="loader" class="loader-screen">
@@ -468,6 +483,7 @@
   <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
 
   <script src="public/js/main.js"></script>
+  <script type="module" src="public/js/bee-controller.js"></script>
 </body>
 
 </html>

@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const TOTAL_FRAMES = 881; // Actual extracted count in public/frames/
     const INITIAL_PRELOAD_COUNT = 40;
@@ -129,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function revealPage() {
         loader.classList.add('hidden');
+        document.dispatchEvent(new CustomEvent('site:loaded')); // tells bee-controller.js to take off
         resizeCanvas();
         renderFrame(1);
         updateRollingCache(1, 1);
