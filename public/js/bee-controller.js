@@ -15,6 +15,8 @@
  *   This keeps the whole thing simple and resolution-independent.
  */
 
+console.log('[bee-controller] loading three.js and honey_bee.glb');
+
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
