@@ -53,7 +53,7 @@ const CHASE_SPEED = 260; // px/second — bee's max pursuit speed. A quick
 // mouse flick easily outruns this; the bee only gains ground once you slow
 // down or stop. Raise this to make it harder to escape, lower it for more
 // breathing room.
-const CHASE_TIMESCALE = 1.8; // wing-flap speed multiplier while hunting
+const CHASE_TIMESCALE = 5.8; // wing-flap speed multiplier while hunting
 const STING_RETURN_DELAY = 700; // ms to sit at the sting point before flying back
 
 init();
