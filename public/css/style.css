@@ -162,11 +162,11 @@ h3,
     position: fixed;
     top: 58vh;
     left: 78vw;
-    width: 190px;
-    height: 190px;
+    width: 210px;
+    height: 210px;
     z-index: 500;
     /* above section content, below nav/cursor-glow/loader */
-    pointer-events: none;
+    /* pointer-events: none; */
     opacity: 0;
     filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.45));
     transition: opacity 0.8s ease;

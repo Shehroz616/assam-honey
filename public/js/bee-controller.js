@@ -15,21 +15,31 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-const MODEL_URL = 'public/models/honey_bee.glb';
-const RENDER_SIZE = 190; // keep in sync with #bee-container size in CSS
+const MODEL_URL = 'public/models/honey_bee-new.glb';
+const RENDER_SIZE = 210; // keep in sync with #bee-container size in CSS
 
 // ---- Waypoints: one per section, tuned to sit near that section's copy.
-// x / y are viewport percentages (CSS left/top), rot is a small tilt in deg.
-// Adjust these to taste once you see it live against your layout.
+// x / y are viewport percentages (CSS left/top), rot is the 2D CSS tilt
+// (deg) applied to the whole #bee-container — a "banking" lean as it moves.
+// facing is the 3D THREE.js yaw (radians) applied to the bee MODEL itself —
+// this is what actually turns the bee to look left/right/toward the camera
+// while it's parked at that section. Omit facing on a waypoint to keep
+// whatever angle it already had (no snap).
+//   0            -> facing the camera head-on
+//   Math.PI / 2  -> profile, facing screen-right
+//  -Math.PI / 2  -> profile, facing screen-left
+//   Math.PI / 4  -> 3/4 view facing screen-right
+//  -Math.PI / 4  -> 3/4 view facing screen-left
+//   Math.PI      -> facing away from camera
 const WAYPOINTS = [
-    { trigger: '#hero-track', x: '78vw', y: '58vh', rot: -8 },
-    { trigger: '#explainer-section', x: '54vw', y: '28vh', rot: 6 },
-    { trigger: '#collection-rail-track', x: '85vw', y: '75vh', rot: -10 },
-    { trigger: '#ritual-section', x: '15vw', y: '40vh', rot: 10 },
-    { trigger: '#statement-section', x: '50vw', y: '22vh', rot: 0 },
-    { trigger: '#reverse-columns-section', x: '20vw', y: '65vh', rot: -6 },
-    { trigger: '#grid-section', x: '80vw', y: '18vh', rot: 8 },
-    { trigger: '#newsletter-section', x: '50vw', y: '55vh', rot: 0 },
+    { trigger: '#hero-track', x: '178vw', y: '58vh', rot: -50, facing: Math.PI / 2 },
+    { trigger: '#explainer-section', x: '10vw', y: '5vh', rot: -15, facing: Math.PI / 4 },
+    { trigger: '#collection-rail-track', x: '85vw', y: '75vh', rot: -10, facing: -Math.PI / 4 },
+    { trigger: '#ritual-section', x: '18vw', y: '3vh', rot: -10, facing: Math.PI / 4 },
+    { trigger: '#statement-section', x: '50vw', y: '22vh', rot: 0, facing: 0 },
+    { trigger: '#reverse-columns-section', x: '20vw', y: '65vh', rot: -6, facing: Math.PI / 4 },
+    { trigger: '#grid-section', x: '80vw', y: '18vh', rot: 8, facing: -Math.PI / 4 },
+    { trigger: '#newsletter-section', x: '60vw', y: '55vh', rot: 0, facing: 0 },
 ];
 
 init();
@@ -43,11 +53,18 @@ async function init() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0.35, 3.2);
+    // If you'd rather orbit the CAMERA around the bee instead of turning the
+    // model (see bee.rotation.y below), move camera.position off-axis, e.g.
+    // camera.position.set(2.2, 0.6, 2.2), and add camera.lookAt(0, 0, 0)
+    // right after. Only use one approach at a time — mixing both just
+    // compounds the angle in a confusing way.
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(RENDER_SIZE, RENDER_SIZE, false);
-    if ('outputColorSpace' in renderer) renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
 
     scene.add(new THREE.AmbientLight(0xfff4d6, 1.2));
     const key = new THREE.DirectionalLight(0xffe9b0, 1.8);
@@ -68,9 +85,25 @@ async function init() {
         MODEL_URL,
         (gltf) => {
             bee = gltf.scene;
-            bee.scale.setScalar(1.0); // tune to fill the 190px frame nicely
+            bee.scale.setScalar(0.75); // tune to fill the 190px frame nicely
             bee.position.set(0, -0.15, 0);
+            // Rotate the bee itself so a different side faces the camera —
+            // the model faces straight at the lens (0°) by default. Try:
+            //   Math.PI / 2   -> profile view, facing screen-right
+            //  -Math.PI / 2   -> profile view, facing screen-left
+            //   Math.PI / 4   -> 3/4 view (usually the most flattering for flight)
+            //   Math.PI       -> facing directly away from camera
+            bee.rotation.y = Math.PI / 4;
             scene.add(bee);
+
+            bee.traverse((object) => {
+                if (!object.isMesh || !object.material) return;
+                const materials = Array.isArray(object.material) ? object.material : [object.material];
+                materials.forEach((material) => {
+                    if (material.map) material.map.colorSpace = THREE.SRGBColorSpace;
+                    material.needsUpdate = true;
+                });
+            });
 
             mixer = new THREE.AnimationMixer(bee);
             gltf.animations.forEach((clip) => {
@@ -90,7 +123,7 @@ async function init() {
                 if (!activeAction) takeOff();
             }, 4000);
 
-            setupScrollChoreography(container);
+            setupScrollChoreography(container, bee);
         },
         undefined,
         (err) => console.error('[bee-controller] failed to load honey_bee.glb', err)
@@ -98,6 +131,7 @@ async function init() {
 
     function takeOff() {
         container.classList.add('bee-ready');
+        console.log(container);
         const takeoff = actions['take_off_and_land'];
         const idle = actions['idle'];
 
@@ -153,7 +187,7 @@ async function init() {
 }
 
 // ---- Scroll choreography: fly between waypoints -------------------------
-function setupScrollChoreography(container) {
+function setupScrollChoreography(container, bee) {
     if (!window.gsap || !window.ScrollTrigger) {
         console.warn('[bee-controller] GSAP/ScrollTrigger not found — bee will stay put.');
         return;
@@ -166,6 +200,9 @@ function setupScrollChoreography(container) {
         top: WAYPOINTS[0].y,
         rotate: WAYPOINTS[0].rot,
     });
+    if (bee && typeof WAYPOINTS[0].facing === 'number') {
+        bee.rotation.y = WAYPOINTS[0].facing;
+    }
 
     WAYPOINTS.forEach((wp) => {
         const el = document.querySelector(wp.trigger);
@@ -191,6 +228,19 @@ function setupScrollChoreography(container) {
             ease: 'power2.inOut',
             onComplete: () => document.dispatchEvent(new CustomEvent('bee:arrived')),
         });
+
+        // Turn the 3D model itself to face the direction set for this
+        // section. This is a separate tween from the CSS move above: gsap
+        // can animate any numeric object property, not just DOM elements,
+        // so it happily tweens bee.rotation.y (a THREE.js Euler component)
+        // the same way it tweens container.style.left.
+        if (bee && typeof wp.facing === 'number') {
+            gsap.to(bee.rotation, {
+                y: wp.facing,
+                duration: 1.1,
+                ease: 'power2.inOut',
+            });
+        }
     }
 }
 
