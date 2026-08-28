@@ -280,7 +280,7 @@ body::after {
 .hero-poster {
     position: absolute;
     inset: 0;
-    background-image: url('./public/images/hero/bg-forest-twilight.jfif');
+    background-image: url('./public/images/background/bg-forest-twilight.jfif');
     background-size: cover;
     background-position: center;
     filter: brightness(0.65);
