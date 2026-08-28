@@ -7,9 +7,12 @@
  * - On scroll, GSAP ScrollTrigger flies the bee's on-screen position from
  *   waypoint to waypoint (one per section) so it looks like it's guiding /
  *   pointing at whatever text is currently on screen
+ * - The bee's head/body eases toward the mouse cursor continuously
+ * - Click the bee: it chases your cursor across the whole page until it
+ *   catches it ("stings"), then flies back to wherever it was
  * - Renders into a small fixed-size <canvas> that sits inside a
- *   position:fixed div — we move that DIV with CSS (via GSAP), not the
- *   3D camera. This keeps the whole thing simple and resolution-independent.
+ *   position:fixed div — we move that DIV with CSS, not the 3D camera.
+ *   This keeps the whole thing simple and resolution-independent.
  */
 
 import * as THREE from 'three';
@@ -42,6 +45,15 @@ const WAYPOINTS = [
     { trigger: '#newsletter-section', x: '60vw', y: '55vh', rot: 0, facing: 0 },
 ];
 
+// ---- Chase-and-sting tuning ------------------------------------------
+const STING_DISTANCE = 55; // px — how close counts as "caught"
+const CHASE_SPEED = 260; // px/second — bee's max pursuit speed. A quick
+// mouse flick easily outruns this; the bee only gains ground once you slow
+// down or stop. Raise this to make it harder to escape, lower it for more
+// breathing room.
+const CHASE_TIMESCALE = 1.8; // wing-flap speed multiplier while hunting
+const STING_RETURN_DELAY = 700; // ms to sit at the sting point before flying back
+
 init();
 
 async function init() {
@@ -53,11 +65,6 @@ async function init() {
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0.35, 3.2);
-    // If you'd rather orbit the CAMERA around the bee instead of turning the
-    // model (see bee.rotation.y below), move camera.position off-axis, e.g.
-    // camera.position.set(2.2, 0.6, 2.2), and add camera.lookAt(0, 0, 0)
-    // right after. Only use one approach at a time — mixing both just
-    // compounds the angle in a confusing way.
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -80,20 +87,54 @@ async function init() {
     let activeAction = null;
     const clock = new THREE.Clock();
 
+    // Rotation is split into two independently-driven pieces that get
+    // summed together every frame in the render loop:
+    //  - facingState.y  -> the scroll-driven "which section am I facing"
+    //                      angle, tweened by GSAP.
+    //  - mouseYawOffset -> a small extra turn toward the cursor, updated
+    //                      continuously on mousemove and eased each frame.
+    // Writing straight to bee.rotation.y from multiple places would fight
+    // itself, so everything writes here instead and only the render loop
+    // touches the model.
+    const facingState = { y: 0 };
+    let mouseYawTarget = 0;
+    let mouseYawOffset = 0;
+    const MOUSE_YAW_RANGE = 0.35; // radians of extra turn at screen edges
+    const MOUSE_EASE = 0.08;
+
+    // Live cursor position in page coordinates, used both for the subtle
+    // head-tracking above and for the chase-and-sting game below.
+    const mousePos = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+
+    window.addEventListener('mousemove', (e) => {
+        mousePos.x = e.clientX;
+        mousePos.y = e.clientY;
+        const nx = (e.clientX / window.innerWidth) * 2 - 1; // -1 .. 1
+        mouseYawTarget = nx * MOUSE_YAW_RANGE;
+    });
+    window.addEventListener('touchmove', (e) => {
+        if (!e.touches || !e.touches.length) return;
+        mousePos.x = e.touches[0].clientX;
+        mousePos.y = e.touches[0].clientY;
+    }, { passive: true });
+    window.addEventListener('touchend', () => {
+        mouseYawTarget = 0;
+    });
+
+    // ---- Chase-and-sting state -----------------------------------------
+    let isChasing = false;
+    let stingCooldown = false;
+    let choreo = null; // set once setupScrollChoreography() returns below
+
     const loader = new GLTFLoader();
     loader.load(
         MODEL_URL,
         (gltf) => {
             bee = gltf.scene;
-            bee.scale.setScalar(0.75); // tune to fill the 190px frame nicely
+            bee.scale.setScalar(0.70); // tune to fill the 190px frame nicely
             bee.position.set(0, -0.15, 0);
-            // Rotate the bee itself so a different side faces the camera —
-            // the model faces straight at the lens (0°) by default. Try:
-            //   Math.PI / 2   -> profile view, facing screen-right
-            //  -Math.PI / 2   -> profile view, facing screen-left
-            //   Math.PI / 4   -> 3/4 view (usually the most flattering for flight)
-            //   Math.PI       -> facing directly away from camera
             bee.rotation.y = Math.PI / 4;
+            facingState.y = Math.PI / 4;
             scene.add(bee);
 
             bee.traverse((object) => {
@@ -110,20 +151,16 @@ async function init() {
                 actions[clip.name] = mixer.clipAction(clip);
             });
 
-            // Idle gentle bob so the bee never looks frozen, even between clips
             startRenderLoop();
 
             // Play the take-off clip once the loader/hero UI has revealed itself
             // (main.js dispatches this the moment it hides the loading screen).
             document.addEventListener('site:loaded', takeOff, { once: true });
-            console.log("takeOff");
-            // Safety net: don't leave the bee invisible forever if that event
-            // never fires for some reason (e.g. main.js changes in the future).
             setTimeout(() => {
                 if (!activeAction) takeOff();
             }, 4000);
 
-            setupScrollChoreography(container, bee);
+            choreo = setupScrollChoreography(container, facingState);
         },
         undefined,
         (err) => console.error('[bee-controller] failed to load honey_bee.glb', err)
@@ -131,7 +168,6 @@ async function init() {
 
     function takeOff() {
         container.classList.add('bee-ready');
-        console.log(container);
         const takeoff = actions['take_off_and_land'];
         const idle = actions['idle'];
 
@@ -159,8 +195,8 @@ async function init() {
         if (activeAction) activeAction.fadeOut(duration);
         activeAction = next;
     }
-    // Exposed so the scroll-choreography code below (which only deals with
-    // CSS position) can also nudge which animation clip is playing.
+    // Exposed so the scroll-choreography code (which only deals with CSS
+    // position) can also nudge which animation clip is playing.
     window.__beeCrossfade = crossfadeTo;
 
     let rafId = null;
@@ -170,10 +206,132 @@ async function init() {
             rafId = requestAnimationFrame(tick);
             const dt = clock.getDelta();
             if (mixer) mixer.update(dt);
+
+            if (isChasing) {
+                updateChase(dt);
+            } else {
+                // Ease the mouse-driven yaw offset toward its target and
+                // combine with the scroll-driven base facing.
+                mouseYawOffset += (mouseYawTarget - mouseYawOffset) * MOUSE_EASE;
+                if (bee) bee.rotation.y = facingState.y + mouseYawOffset;
+            }
+
             renderer.render(scene, camera);
         };
         tick();
     }
+
+    // ---- Chase-and-sting ------------------------------------------------
+    function startChase() {
+        if (isChasing || stingCooldown || !mixer) return;
+        isChasing = true;
+        if (choreo) choreo.setChasing(true);
+        crossfadeTo('hover', 0.2);
+        const hover = actions['hover'];
+        if (hover) hover.timeScale = CHASE_TIMESCALE;
+        document.dispatchEvent(new CustomEvent('bee:chase-start'));
+    }
+
+    function updateChase(dt) {
+        const rect = container.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = mousePos.x - cx;
+        const dy = mousePos.y - cy;
+        const dist = Math.hypot(dx, dy);
+
+        // Turn to face the direction of travel (and thus the cursor) while
+        // hunting — overrides the passive mouse-look for a more purposeful feel.
+        if (bee && dist > 2) {
+            const targetYaw = Math.atan2(dx, 400); // rough left/right lean toward cursor
+            bee.rotation.y = THREE.MathUtils.lerp(bee.rotation.y, targetYaw, 0.15);
+        }
+
+        if (dist <= STING_DISTANCE) {
+            sting(cx, cy);
+            return;
+        }
+
+        // Fixed top speed rather than "close X% of the gap per frame": that
+        // proportional approach converges almost instantly and never gives
+        // the mouse a real chance to run. Here the bee covers at most
+        // CHASE_SPEED px/second, capped so it never overshoots the cursor.
+        const maxStep = CHASE_SPEED * dt;
+        const travel = Math.min(maxStep, dist);
+        const ux = dx / dist;
+        const uy = dy / dist;
+
+        container.style.left = rect.left + ux * travel + 'px';
+        container.style.top = rect.top + uy * travel + 'px';
+    }
+
+    function sting(x, y) {
+        isChasing = false;
+        stingCooldown = true;
+        const hover = actions['hover'];
+        if (hover) hover.timeScale = 1;
+
+        // Hand rotation control back to the passive mouse-look system
+        // starting from wherever the chase left it, so the head doesn't
+        // visibly snap the instant the chase ends.
+        if (bee) {
+            facingState.y = bee.rotation.y;
+            mouseYawOffset = 0;
+            mouseYawTarget = 0;
+        }
+
+        document.dispatchEvent(new CustomEvent('bee:sting', { detail: { x, y } }));
+
+        // The model's GLB only ships "hover" / "idle" / "take_off_and_land" —
+        // there's no dedicated sting clip baked into the rig, so we can't
+        // just play one. Instead we fake the motion procedurally: a fast
+        // forward-and-down dive of the whole model, then a spring back —
+        // driven directly on bee.rotation/bee.position rather than the
+        // skeletal animation system. If you ever add a real rigged "sting"
+        // clip in Blender/Mixamo and export it into the GLB, swap this out
+        // for crossfadeTo('sting', 0.05) instead — it'll slot in exactly
+        // like the other three clips.
+        if (bee && window.gsap) {
+            window.gsap.timeline()
+                .to(bee.rotation, { x: 0.55, duration: 0.08, ease: 'power2.out' })
+                .to(bee.position, { y: '-=0.14', z: '+=0.2', duration: 0.08, ease: 'power2.out' }, '<')
+                .to(bee.rotation, { x: 0, duration: 0.3, ease: 'elastic.out(1, 0.5)' })
+                .to(bee.position, { y: '+=0.14', z: '-=0.2', duration: 0.3, ease: 'power2.inOut' }, '<');
+        }
+
+        // A quick "impact" punch on the container — scale up then settle —
+        // using GSAP if it's available, otherwise just skip the flourish.
+        if (window.gsap) {
+            window.gsap.timeline()
+                .to(container, { scale: 1.35, duration: 0.12, ease: 'power1.out' })
+                .to(container, { scale: 1, duration: 0.3, ease: 'power2.out' });
+        }
+        crossfadeTo('idle', 0.3);
+
+        setTimeout(() => {
+            if (choreo) {
+                choreo.setChasing(false);
+                choreo.flyToLast();
+            }
+            stingCooldown = false;
+        }, STING_RETURN_DELAY);
+    }
+
+    // ---- Mouse/touch interaction directly on the bee -------------------
+    // The container stays pointer-events:none (so it never blocks clicks on
+    // your page underneath), but the small canvas itself can safely opt
+    // back in — it's only 190px and moves with scroll/chase, so this
+    // doesn't interfere with the rest of the site.
+    canvas.style.pointerEvents = 'auto';
+    canvas.style.cursor = 'pointer';
+
+    canvas.addEventListener('mouseenter', () => {
+        if (!isChasing) crossfadeTo('hover', 0.3);
+    });
+    canvas.addEventListener('mouseleave', () => {
+        if (!isChasing) crossfadeTo('idle', 0.4);
+    });
+    canvas.addEventListener('click', startChase);
 
     // Pause rendering when the tab isn't visible (saves battery/CPU)
     document.addEventListener('visibilitychange', () => {
@@ -187,12 +345,17 @@ async function init() {
 }
 
 // ---- Scroll choreography: fly between waypoints -------------------------
-function setupScrollChoreography(container, bee) {
+// Returns { flyToLast, setChasing } so init() can pause section-flights
+// during a chase and resume/reposition afterward.
+function setupScrollChoreography(container, facingState) {
     if (!window.gsap || !window.ScrollTrigger) {
         console.warn('[bee-controller] GSAP/ScrollTrigger not found — bee will stay put.');
-        return;
+        return { flyToLast: () => {}, setChasing: () => {} };
     }
     const { gsap, ScrollTrigger } = window;
+
+    let chasing = false;
+    let lastWaypoint = WAYPOINTS[0];
 
     // Start parked at the hero waypoint
     gsap.set(container, {
@@ -200,9 +363,7 @@ function setupScrollChoreography(container, bee) {
         top: WAYPOINTS[0].y,
         rotate: WAYPOINTS[0].rot,
     });
-    if (bee && typeof WAYPOINTS[0].facing === 'number') {
-        bee.rotation.y = WAYPOINTS[0].facing;
-    }
+    facingState.y = WAYPOINTS[0].facing ?? facingState.y;
 
     WAYPOINTS.forEach((wp) => {
         const el = document.querySelector(wp.trigger);
@@ -218,7 +379,9 @@ function setupScrollChoreography(container, bee) {
     });
 
     function flyTo(wp) {
-        // switch to the "hover" clip while it's mid-flight, back to "idle" on arrival
+        lastWaypoint = wp; // always track this, even mid-chase
+        if (chasing) return; // don't yank the bee away from the hunt
+
         document.dispatchEvent(new CustomEvent('bee:flying'));
         gsap.to(container, {
             left: wp.x,
@@ -229,19 +392,24 @@ function setupScrollChoreography(container, bee) {
             onComplete: () => document.dispatchEvent(new CustomEvent('bee:arrived')),
         });
 
-        // Turn the 3D model itself to face the direction set for this
-        // section. This is a separate tween from the CSS move above: gsap
-        // can animate any numeric object property, not just DOM elements,
-        // so it happily tweens bee.rotation.y (a THREE.js Euler component)
-        // the same way it tweens container.style.left.
-        if (bee && typeof wp.facing === 'number') {
-            gsap.to(bee.rotation, {
+        if (typeof wp.facing === 'number') {
+            gsap.to(facingState, {
                 y: wp.facing,
                 duration: 1.1,
                 ease: 'power2.inOut',
             });
         }
     }
+
+    return {
+        setChasing(v) {
+            chasing = v;
+            if (v) gsap.killTweensOf(container); // hand control to the chase loop
+        },
+        flyToLast() {
+            flyTo(lastWaypoint);
+        },
+    };
 }
 
 // Small bridge so the two independent concerns (animation clips vs. CSS
