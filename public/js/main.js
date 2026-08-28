@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const TOTAL_FRAMES = 881; // Actual extracted count in public/frames/
-    const INITIAL_PRELOAD_COUNT = 40;
 
     // Distinct storage names per rules
     const frames = new Map();      // Hero frame sequence map
@@ -89,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function loadSingleFrame(idx, onSingleLoad) {
+    function loadSingleFrame(idx, onSingleLoad, onSingleError) {
         if (idx < 1 || idx > TOTAL_FRAMES || frames.has(idx)) return;
         const img = new Image();
         const padded = String(idx).padStart(4, '0');
@@ -101,29 +100,48 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         img.onerror = () => {
             frames.delete(idx);
+            // A failed frame still has to count toward "preload finished",
+            // or a single missing file on the server would hang the loader
+            // forever waiting for a completion count that can never arrive.
+            if (onSingleError) onSingleError(idx);
         };
     }
 
-    // Initial Preload: Only 40 frames before revealing page
+    // Preload ALL frames before revealing the page. We used to only wait
+    // for the first 40 and stream the rest in via a scroll-driven "rolling
+    // cache" window — fine on a fast local server, but on a live server the
+    // network can't always keep up with fast scrolling, so renderFrame()
+    // falls back to whatever frame happens to already be decoded, which is
+    // exactly the stutter/lag you were seeing. Waiting for the full
+    // sequence up front trades a longer initial load for a scroll that
+    // never has to guess.
     let initialLoaded = 0;
-    function preloadInitial40() {
-        for (let i = 1; i <= INITIAL_PRELOAD_COUNT; i++) {
-            loadSingleFrame(i, () => {
-                initialLoaded++;
-                const pct = Math.round((initialLoaded / INITIAL_PRELOAD_COUNT) * 100);
-                loaderBar.style.width = pct + '%';
-                loaderStatus.textContent = `PRELOADING HARVEST (${initialLoaded} / ${INITIAL_PRELOAD_COUNT})`;
-                if (initialLoaded === INITIAL_PRELOAD_COUNT) {
-                    revealPage();
-                }
-            });
-        }
-        // Safety timeout fallback
-        setTimeout(() => {
-            if (!loader.classList.contains('hidden')) {
+    let fullyPreloaded = false;
+    function preloadAllFrames() {
+        const onFrameSettled = () => {
+            initialLoaded++;
+            const pct = Math.round((initialLoaded / TOTAL_FRAMES) * 100);
+            loaderBar.style.width = pct + '%';
+            loaderStatus.textContent = `PRELOADING HARVEST (${initialLoaded} / ${TOTAL_FRAMES})`;
+            if (initialLoaded === TOTAL_FRAMES) {
+                fullyPreloaded = true;
                 revealPage();
             }
-        }, 1200);
+        };
+
+        for (let i = 1; i <= TOTAL_FRAMES; i++) {
+            loadSingleFrame(i, onFrameSettled, onFrameSettled);
+        }
+
+        // Safety fallback only — this should essentially never fire under
+        // normal conditions since onload/onerror above always resolve. It
+        // exists purely so a pathological network doesn't hang the loader
+        // forever. Long on purpose: this is a last resort, not a target.
+        setTimeout(() => {
+            if (!fullyPreloaded && !loader.classList.contains('hidden')) {
+                revealPage();
+            }
+        }, 25000);
     }
 
     function revealPage() {
@@ -137,6 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Rolling Cache & JIT Prefetch Window Management
     function updateRollingCache(currentIndex, direction) {
+        // Once every frame has been preloaded up front, there's nothing
+        // left to prune or prefetch — skip the window bookkeeping entirely
+        // rather than needlessly deleting/reloading frames we already have.
+        if (fullyPreloaded) return;
+
         const windowSize = 60;
         const prefetchExtra = 15;
 
@@ -455,8 +478,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Preload initial 40 frames and kick off
-    preloadInitial40();
+    // Preload every hero frame, then kick off
+    preloadAllFrames();
 
     // MUST end script with ScrollTrigger.refresh()
     ScrollTrigger.refresh();

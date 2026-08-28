@@ -1,43 +1,11 @@
-/**
- * Flying Bee Guide — vanilla three.js (no React, no bundler)
- * -----------------------------------------------------------------------
- * - Loads honey_bee.glb (clips found inside: "hover", "idle", "take_off_and_land")
- * - Plays "take_off_and_land" once the page finishes loading, then settles
- *   into a looping "idle"
- * - On scroll, GSAP ScrollTrigger flies the bee's on-screen position from
- *   waypoint to waypoint (one per section) so it looks like it's guiding /
- *   pointing at whatever text is currently on screen
- * - The bee's head/body eases toward the mouse cursor continuously
- * - Click the bee: it chases your cursor across the whole page until it
- *   catches it ("stings"), then flies back to wherever it was
- * - Renders into a small fixed-size <canvas> that sits inside a
- *   position:fixed div — we move that DIV with CSS, not the 3D camera.
- *   This keeps the whole thing simple and resolution-independent.
- */
-
-console.log('[bee-controller] loading three.js and honey_bee.glb');
-
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const MODEL_URL = 'public/models/honey_bee-new.glb';
 const RENDER_SIZE = 210; // keep in sync with #bee-container size in CSS
 
-// ---- Waypoints: one per section, tuned to sit near that section's copy.
-// x / y are viewport percentages (CSS left/top), rot is the 2D CSS tilt
-// (deg) applied to the whole #bee-container — a "banking" lean as it moves.
-// facing is the 3D THREE.js yaw (radians) applied to the bee MODEL itself —
-// this is what actually turns the bee to look left/right/toward the camera
-// while it's parked at that section. Omit facing on a waypoint to keep
-// whatever angle it already had (no snap).
-//   0            -> facing the camera head-on
-//   Math.PI / 2  -> profile, facing screen-right
-//  -Math.PI / 2  -> profile, facing screen-left
-//   Math.PI / 4  -> 3/4 view facing screen-right
-//  -Math.PI / 4  -> 3/4 view facing screen-left
-//   Math.PI      -> facing away from camera
 const WAYPOINTS = [
-    { trigger: '#hero-track', x: '178vw', y: '58vh', rot: -50, facing: Math.PI / 2 },
+    { trigger: '#hero-track', x: '-78vw', y: '58vh', rot: -50, facing: Math.PI / 2 },
     { trigger: '#explainer-section', x: '10vw', y: '5vh', rot: -15, facing: Math.PI / 4 },
     { trigger: '#collection-rail-track', x: '85vw', y: '75vh', rot: -10, facing: -Math.PI / 4 },
     { trigger: '#ritual-section', x: '18vw', y: '3vh', rot: -10, facing: Math.PI / 4 },
@@ -46,14 +14,14 @@ const WAYPOINTS = [
     { trigger: '#grid-section', x: '80vw', y: '18vh', rot: 8, facing: -Math.PI / 4 },
     { trigger: '#newsletter-section', x: '60vw', y: '55vh', rot: 0, facing: 0 },
 ];
-
 // ---- Chase-and-sting tuning ------------------------------------------
 const STING_DISTANCE = 55; // px — how close counts as "caught"
 const CHASE_SPEED = 260; // px/second — bee's max pursuit speed. A quick
 // mouse flick easily outruns this; the bee only gains ground once you slow
 // down or stop. Raise this to make it harder to escape, lower it for more
 // breathing room.
-const CHASE_TIMESCALE = 5.8; // wing-flap speed multiplier while hunting
+const CHASE_TIMESCALE = 1.8; // wing-flap speed multiplier while hunting
+const WINDUP_TIMESCALE = 2.6; // wing-flap speed multiplier during the angry shake
 const STING_RETURN_DELAY = 700; // ms to sit at the sting point before flying back
 
 init();
@@ -125,6 +93,7 @@ async function init() {
 
     // ---- Chase-and-sting state -----------------------------------------
     let isChasing = false;
+    let isWindingUp = false;
     let stingCooldown = false;
     let choreo = null; // set once setupScrollChoreography() returns below
 
@@ -133,7 +102,7 @@ async function init() {
         MODEL_URL,
         (gltf) => {
             bee = gltf.scene;
-            bee.scale.setScalar(0.70); // tune to fill the 190px frame nicely
+            bee.scale.setScalar(0.70); // tune to fill the 210px frame nicely
             bee.position.set(0, -0.15, 0);
             bee.rotation.y = Math.PI / 4;
             facingState.y = Math.PI / 4;
@@ -224,8 +193,53 @@ async function init() {
     }
 
     // ---- Chase-and-sting ------------------------------------------------
-    function startChase() {
-        if (isChasing || stingCooldown || !mixer) return;
+    // Three phases: windUp() (angry shake + a failed stab) -> beginChase()
+    // (actually pursues the cursor) -> sting() (catches it, instant this
+    // time since the "wind up" already happened).
+    function onBeeClick() {
+        if (isChasing || isWindingUp || stingCooldown || !mixer) return;
+        windUp();
+    }
+
+    function windUp() {
+        isWindingUp = true;
+        stingCooldown = true; // blocks re-clicks for the whole sequence
+        document.dispatchEvent(new CustomEvent('bee:windup-start'));
+
+        crossfadeTo('hover', 0.15);
+        const hover = actions['hover'];
+        if (hover) hover.timeScale = WINDUP_TIMESCALE;
+
+        function finishWindUp() {
+            isWindingUp = false;
+            beginChase();
+        }
+
+        if (!window.gsap || !bee) {
+            // No GSAP / model not ready — skip the flourish, go straight to chase.
+            finishWindUp();
+            return;
+        }
+
+        window.gsap.timeline({ onComplete: finishWindUp })
+            // Angry shake: quick alternating left-right jitter on the
+            // container. Net displacement is zero so it doesn't drift the
+            // bee off its current spot before the chase even starts.
+            .to(container, { x: -10, duration: 0.06, ease: 'power1.inOut' })
+            .to(container, { x: 10, duration: 0.06, ease: 'power1.inOut' })
+            .to(container, { x: -8, duration: 0.06, ease: 'power1.inOut' })
+            .to(container, { x: 8, duration: 0.06, ease: 'power1.inOut' })
+            .to(container, { x: -4, duration: 0.05, ease: 'power1.inOut' })
+            .to(container, { x: 0, duration: 0.05, ease: 'power1.inOut' })
+            // A failed stab — same forward-and-down dive as the real sting
+            // (see sting() below) but nothing to catch yet, so it whiffs.
+            .to(bee.rotation, { x: 0.45, duration: 0.08, ease: 'power2.out' })
+            .to(bee.position, { z: '+=0.15', duration: 0.08, ease: 'power2.out' }, '<')
+            .to(bee.rotation, { x: 0, duration: 0.22, ease: 'power2.inOut' })
+            .to(bee.position, { z: '-=0.15', duration: 0.22, ease: 'power2.inOut' }, '<');
+    }
+
+    function beginChase() {
         isChasing = true;
         if (choreo) choreo.setChasing(true);
         crossfadeTo('hover', 0.2);
@@ -235,7 +249,22 @@ async function init() {
     }
 
     function updateChase(dt) {
+        // NOTE: getBoundingClientRect() returns the element's box AFTER the
+        // CSS "rotate" transform (from the waypoint's banking tilt) is
+        // applied — for a rotated square that box is measurably WIDER/
+        // TALLER than the real on-screen size (up to ~40px extra at a 45°
+        // lean). rect.left/rect.top + half of that inflated rect.width/
+        // rect.height still correctly locates the visual CENTER (rotating
+        // about the center point doesn't move it), so it's safe to use for
+        // measuring. But writing a new position back using rect.width/
+        // rect.height divides by the wrong (inflated) size and places the
+        // box tens of pixels off — that's what made this only work on the
+        // waypoints with rot: 0 (nothing to inflate the bounding box) and
+        // go sideways everywhere else. Fix: convert the new center back to
+        // left/top using the element's true, unrotated size instead.
         const rect = container.getBoundingClientRect();
+        const w = container.offsetWidth; // true, unrotated size
+        const h = container.offsetHeight;
         const cx = rect.left + rect.width / 2;
         const cy = rect.top + rect.height / 2;
         const dx = mousePos.x - cx;
@@ -263,8 +292,11 @@ async function init() {
         const ux = dx / dist;
         const uy = dy / dist;
 
-        container.style.left = rect.left + ux * travel + 'px';
-        container.style.top = rect.top + uy * travel + 'px';
+        const newCenterX = cx + ux * travel;
+        const newCenterY = cy + uy * travel;
+
+        container.style.left = newCenterX - w / 2 + 'px';
+        container.style.top = newCenterY - h / 2 + 'px';
     }
 
     function sting(x, y) {
@@ -322,18 +354,18 @@ async function init() {
     // ---- Mouse/touch interaction directly on the bee -------------------
     // The container stays pointer-events:none (so it never blocks clicks on
     // your page underneath), but the small canvas itself can safely opt
-    // back in — it's only 190px and moves with scroll/chase, so this
+    // back in — it's only ~210px and moves with scroll/chase, so this
     // doesn't interfere with the rest of the site.
     canvas.style.pointerEvents = 'auto';
     canvas.style.cursor = 'pointer';
 
     canvas.addEventListener('mouseenter', () => {
-        if (!isChasing) crossfadeTo('hover', 0.3);
+        if (!isChasing && !isWindingUp) crossfadeTo('hover', 0.3);
     });
     canvas.addEventListener('mouseleave', () => {
-        if (!isChasing) crossfadeTo('idle', 0.4);
+        if (!isChasing && !isWindingUp) crossfadeTo('idle', 0.4);
     });
-    canvas.addEventListener('click', startChase);
+    canvas.addEventListener('click', onBeeClick);
 
     // Pause rendering when the tab isn't visible (saves battery/CPU)
     document.addEventListener('visibilitychange', () => {
