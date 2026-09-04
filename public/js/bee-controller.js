@@ -16,7 +16,7 @@ const WAYPOINTS = [
 ];
 // ---- Chase-and-sting tuning ------------------------------------------
 const STING_DISTANCE = 55; // px — how close counts as "caught"
-const CHASE_SPEED = 260; // px/second — bee's max pursuit speed. A quick
+const CHASE_SPEED = 560; // px/second — bee's max pursuit speed. A quick
 // mouse flick easily outruns this; the bee only gains ground once you slow
 // down or stop. Raise this to make it harder to escape, lower it for more
 // breathing room.
