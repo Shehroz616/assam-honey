@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (idx < 1 || idx > TOTAL_FRAMES || frames.has(idx)) return;
         const img = new Image();
         const padded = String(idx).padStart(4, '0');
-        img.src = `./public/frames/frame_${padded}.jpg`;
+        img.src = `./public/frames/frame_${padded}.webp`;
         frames.set(idx, img);
         img.onload = () => {
             if (onSingleLoad) onSingleLoad(idx);
